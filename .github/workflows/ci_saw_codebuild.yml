@@ -45,6 +45,7 @@ jobs:
           requester: ${{ github.actor }}
           event-name: ${{ github.event_name }}
   sawother:
+    needs: sawhmac
     runs-on: ubuntu-18.04
     strategy:
       matrix:
@@ -82,5 +83,34 @@ jobs:
           GCC_VERSION: none
           S2N_LIBCRYPTO: ${{ matrix.libcrypto }}
           SAW: true
+          requester: ${{ github.actor }}
+          event-name: ${{ github.event_name }}
+  sidetrail:
+    needs: [sawother, sawhmac]
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/setup-node@v1
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+      - name: S2n Sidetrail CodeBuild
+        uses: aws-actions/aws-codebuild-run-build@master
+        with:
+          project-name: 's2nSidetrail'
+          env-passthrough: |
+            TESTS,
+            requester,
+            event-name
+        env:
+          TESTS: "sidetrail"
           requester: ${{ github.actor }}
           event-name: ${{ github.event_name }}

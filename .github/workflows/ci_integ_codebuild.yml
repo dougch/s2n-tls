@@ -27,6 +27,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
+      - uses: hmarr/debug-action@master
       - name: S2n Integ CodeBuild
         uses: aws-actions/aws-codebuild-run-build@master
         with:
@@ -49,7 +50,9 @@ jobs:
           GCC_VERSION: ${{ matrix.gcc_version }}
           requester: ${{ github.actor }}
           event-name: ${{ github.event_name }}
+          
   integcorkedio:
+    needs: integ
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/setup-node@master
