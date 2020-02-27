@@ -1,0 +1,16 @@
+---
+name: Webhooks
+on:
+  pull_request:
+    branches:
+      - master
+jobs:
+  StartCodeBuild:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Webhook in an Action
+        uses: dougch/workflow-webhook@master
+        env:
+          webhook_url: "https://codebuild.us-west-2.amazonaws.com/webhooks?t=eyJlbmNyeXB0ZWREYXRhIjoiS2RiYU00UDAyMFJoM29ETG5BbEtERWdTYjQ1Y0tobHJxa2JEdkVpazYzaGkxN05xcU9IMkswM3laUFlrZXBPbVZ2RGM4Y2M1ZGhvZFhLKzNQekxwNnB3PSIsIml2UGFyYW1ldGVyU3BlYyI6IlRiMHI0KzFnSVVQR3NTUzYiLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&v=1"
+          webhook_secret: ${{ secrets.GITHUB_TOKEN }}
+          desc: "added urlencoding flag"
