@@ -14,7 +14,7 @@
 #
 
 # Find if the environment has more than 8 cores
-JOBS=8
+JOBS=2
 if [[ -x "$(command -v nproc)" ]]; then
     UNITS=$(nproc);
     if [[ $UNITS -gt $JOBS ]]; then

@@ -44,13 +44,7 @@ if [[ -n "$GCC_VERSION" ]] && [[ "$GCC_VERSION" != "NONE" ]]; then
 fi
 
 # Find if the environment has more than 8 cores
-JOBS=8
-if [[ -x "$(command -v nproc)" ]]; then
-    UNITS=$(nproc);
-    if [[ $UNITS -gt $JOBS ]]; then
-        JOBS=$UNITS;
-    fi
-fi
+source codebuild/bin/jobs.sh
 
 make clean;
 
