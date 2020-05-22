@@ -18,8 +18,9 @@ phases:
     runtime-versions:
       python: 3.7
     commands:
-      - echo Entered the install phase...
-      - echo "We need a test PPA for gcc-9."
+      - echo "Not all Ubuntu images have add-apt-repo installed by default, get it first."
+      - apt update -y && apt install -y software-properties-common
+      - echo "Now adding test PPA for gcc-9."
       - add-apt-repository ppa:ubuntu-toolchain-r/test -y
       - apt-get update -o Acquire::CompressionTypes::Order::=gz
       - apt-get update -y
