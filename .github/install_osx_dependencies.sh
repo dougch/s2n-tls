@@ -15,17 +15,6 @@
 
 set -ex
 
-function brew_install_if_not_installed () {
-    brew list $1 &>/dev/null || brew install $1
-}
-
 brew update
+brew install cmake ninja gcc6 pkg-config ||  true
 
-brew_install_if_not_installed gcc6
-brew_install_if_not_installed gnu-indent
-brew_install_if_not_installed cppcheck
-brew_install_if_not_installed pkg-config # for gnutls compilation
-brew_install_if_not_installed openssl # for python compilation with ssl
-
-# Download and Install Clang Scan-build for static analysis
-if [[ ! -d "$SCAN_BUILD_INSTALL_DIR" ]] && [[ "$TRAVIS_OS_NAME" == "osx" ]]; then .travis/install_scan-build.sh "$SCAN_BUILD_INSTALL_DIR"; fi
