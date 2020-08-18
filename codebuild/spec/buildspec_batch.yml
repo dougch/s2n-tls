@@ -1,0 +1,58 @@
+---
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"). You may not use
+# this file except in compliance with the License. A copy of the License is
+# located at
+#
+# http://aws.amazon.com/apache2.0/
+#
+# or in the "license" file accompanying this file. This file is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied. See the License for the specific language governing permissions and
+# limitations under the License.
+version: 0.2
+
+env:
+  variables:
+    # CODEBUILD_ is a reserved namespace.
+    CB_BIN_DIR: "./codebuild/bin"
+
+batch:
+  build-list:
+    - identifier: asan
+      env:
+        type: LINUX_CONTAINER
+        privileged-mode: false
+        compute-type: BUILD_GENERAL1_SMALL
+        variables:
+          TESTS: asan
+          GCC_VERSION: '4.8'
+          S2N_LIBCRYPTO: 'true'
+
+    - identifier: integ
+      env:
+        type: LINUX_CONTAINER
+        privileged-mode: false
+        compute-type: BUILD_GENERAL1_SMALL
+        variables:
+          TESTS: integration
+          GCC_VERSION: '9'
+          S2N_LIBCRYPTO: 'false'
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.7
+    commands:
+      - echo Entered the install phase...
+  pre_build:
+    commands:
+      - echo S2N_LIBCRYPTO=$S2N_LIBCRYPTO GCC_VERSION=$GCC_VERSION $CB_BIN_DIR/install_default_dependencies.sh
+  build:
+    commands:
+      - printenv
+      - echo S2N_LIBCRYPTO=$S2N_LIBCRYPTO GCC_VERSION=$GCC_VERSION $CB_BIN_DIR/s2n_codebuild.sh
+  post_build:
+    commands:
+      - echo Build completed on `date`
