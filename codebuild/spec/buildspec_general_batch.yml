@@ -17,7 +17,7 @@ env:
   variables:
     # CODEBUILD_ is a reserved namespace.
     CB_BIN_DIR: "./codebuild/bin"
-    CB_SPEC_DIR: "./codebuild/spec"
+    CB_SPEC_DIR: "./codebuild/spec" #These only worn on command lines.
 
 # Prove that:
 # 1. build-list can call another buildspec file w/o running the commands in this buildspec
@@ -53,7 +53,7 @@ batch:
           BUILD_S2N: 'true'
 
     - identifier: integ_boringlibre
-      buildspec: $CB_SPEC_DIR/buildspec_ubuntu_integ_boringlibre.yml
+      buildspec: codebuild/spec/buildspec_ubuntu_integ_boringlibre.yml
 
 phases:
   install:
