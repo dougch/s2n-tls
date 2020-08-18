@@ -1,0 +1,33 @@
+---
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"). You may not use
+# this file except in compliance with the License. A copy of the License is
+# located at
+#
+# http://aws.amazon.com/apache2.0/
+#
+# or in the "license" file accompanying this file. This file is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied. See the License for the specific language governing permissions and
+# limitations under the License.
+version: 0.2
+
+env:
+  variables:
+    # CODEBUILD_ is a reserved namespace.
+    CB_BIN_DIR: "./codebuild/bin"
+    CB_SPEC_DIR: "./codebuild/spec" #These only worn on command lines.
+
+# Prove that:
+# 1. build-list can call another buildspec file w/o running the commands in this buildspec YES!!!
+# 2. review the naming of the sub-jobs, does the identifier get chopped? YES!! LGTM
+# 3. will this generally work as a model? YES
+# 4. Can there be multiple levels of batch jobs?
+batch:
+  build-list:
+    - identifier: integ_boringlibre
+      buildspec: codebuild/spec/buildspec_ubuntu_integ_boringlibre.yml
+    - identifier: general_batch
+      buildspec: codebuild/spec/buildspec_general_batch.yml
+
