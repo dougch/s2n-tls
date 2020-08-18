@@ -13,24 +13,57 @@
 # limitations under the License.
 version: 0.2
 
-
-# Prove that:
-# 1. build-list can call another buildspec file w/o running the commands in this buildspec YES!!!
-# 2. review the naming of the sub-jobs, do they look OK: YES!! LGTM
-# 3. will this generally work as a model? YES
-# 4. Can there be multiple levels of batch jobs? NO!
+# Doc for batch https://docs.aws.amazon.com/codebuild/latest/userguide/batch-build-buildspec.html#build-spec.batch.build-list
 batch:
   build-list:
 
+# Consolidated Integration tests
     - identifier: s2nIntegrationBoringLibre
       buildspec: codebuild/spec/buildspec_ubuntu_integ_boringlibre.yml
+      env:
+        privileged-mode: true
 
     - identifier: s2nIntegrationOpenSSL111PlusCoverage
       buildspec: codebuild/spec/buildspec_ubuntu_integ_openssl111.yml
+      env:
+        privileged-mode: true
 
     - identifier: s2nIntegrationOpenSSL102Plus
       buildspec: codebuild/spec/buildspec_ubuntu_integ_openssl102.yml
+      env:
+        privileged-mode: true
 
     - identifier: s2nIntegrationOpenSSL102AsanValgrind
       buildspec: codebuild/spec/buildspec_ubuntu_integ_openssl102_asanvalgrind.yml
+      env:
+        privileged-mode: true
 
+# Individual Integration tests
+    - identifier: s2nIntegrationOpenSSL111Gcc9
+      buildspec: codebuild/spec/buildspec_ubuntu.yml
+      env:
+        variables:
+          - S2N_LIBCRYPTO: openssl-1.1.1
+          - BUILD_S2N: true
+          - TESTS: integration
+          - GCC_VERSION: 9
+
+    - identifier: s2nIntegrationLibreSSLGcc9
+      buildspec: codebuild/spec/buildspec_ubuntu.yml
+      env:
+        variables:
+          - S2N_LIBCRYPTO: libressl
+          - BUILD_S2N: true
+          - TESTS: integration
+          - GCC_VERSION: 9
+
+    - identifier: s2nIntegrationOpenSSL111Gcc6Coverage
+      buildspec: codebuild/spec/buildspec_ubuntu.yml
+      env:
+        variables:
+          - S2N_LIBCRYPTO: openssl-1.1.1
+          - BUILD_S2N: true
+          - TESTS: integration
+          - GCC_VERSION: 6
+          - S2N_COVERAGE: true
+          - CODECOV_IO_UPLOAD: true
