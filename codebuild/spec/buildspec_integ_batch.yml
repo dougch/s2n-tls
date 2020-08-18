@@ -13,21 +13,24 @@
 # limitations under the License.
 version: 0.2
 
-env:
-  variables:
-    # CODEBUILD_ is a reserved namespace.
-    CB_BIN_DIR: "./codebuild/bin"
-    CB_SPEC_DIR: "./codebuild/spec" #These only worn on command lines.
 
 # Prove that:
 # 1. build-list can call another buildspec file w/o running the commands in this buildspec YES!!!
-# 2. review the naming of the sub-jobs, does the identifier get chopped? YES!! LGTM
+# 2. review the naming of the sub-jobs, do they look OK: YES!! LGTM
 # 3. will this generally work as a model? YES
-# 4. Can there be multiple levels of batch jobs?
+# 4. Can there be multiple levels of batch jobs? NO!
 batch:
   build-list:
-    - identifier: integ_boringlibre
+
+    - identifier: s2nIntegrationBoringLibre
       buildspec: codebuild/spec/buildspec_ubuntu_integ_boringlibre.yml
-    - identifier: general_batch
-      buildspec: codebuild/spec/buildspec_general_batch.yml
+
+    - identifier: s2nIntegrationOpenSSL111PlusCoverage
+      buildspec: codebuild/spec/buildspec_ubuntu_integ_openssl111.yml
+
+    - identifier: s2nIntegrationOpenSSL102Plus
+      buildspec: codebuild/spec/buildspec_ubuntu_integ_openssl102.yml
+
+    - identifier: s2nIntegrationOpenSSL102AsanValgrind
+      buildspec: codebuild/spec/buildspec_ubuntu_integ_openssl102_asanvalgrind.yml
 
