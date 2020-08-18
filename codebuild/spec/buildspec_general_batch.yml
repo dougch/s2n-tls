@@ -17,28 +17,43 @@ env:
   variables:
     # CODEBUILD_ is a reserved namespace.
     CB_BIN_DIR: "./codebuild/bin"
+    CB_SPEC_DIR: "./codebuild/spec"
 
+# Prove that:
+# 1. build-list can call another buildspec file w/o running the commands in this buildspec
+# 2. review the naming of the sub-jobs, does the identifier get chopped?
+# 3. will this generally work as a model?
 batch:
   build-list:
-    - identifier: asan
+    - identifier: asan_openssl111_coverage
       env:
-        type: LINUX_CONTAINER
-        privileged-mode: false
-        compute-type: BUILD_GENERAL1_SMALL
         variables:
           TESTS: asan
-          GCC_VERSION: '4.8'
-          S2N_LIBCRYPTO: 'true'
+          GCC_VERSION: '6'
+          S2N_LIBCRYPTO: 'openssl-1.1.1'
+          BUILD_S2N: 'true'
+          S2N_COVERAGE: 'false'
+          CODECOV_IO_UPLOAD: 'false'
+          CODECOV_TOKEN: 'foobar'
 
-    - identifier: integ
+    - identifier: asan_openssl102
       env:
-        type: LINUX_CONTAINER
-        privileged-mode: false
-        compute-type: BUILD_GENERAL1_SMALL
         variables:
-          TESTS: integration
-          GCC_VERSION: '9'
-          S2N_LIBCRYPTO: 'false'
+          TESTS: asan
+          GCC_VERSION: '6'
+          S2N_LIBCRYPTO: 'openssl-1.0.2'
+          BUILD_S2N: 'true'
+
+    - identifier: valgrind_openssl102
+      env:
+        variables:
+          TESTS: valgrind
+          GCC_VERSION: '6'
+          S2N_LIBCRYPTO: 'openssl-1.0.2'
+          BUILD_S2N: 'true'
+
+    - identifier: integ_boringlibre
+      buildspec: $CB_SPEC_DIR/buildspec_ubuntu_integ_boringlibre.yml
 
 phases:
   install:
