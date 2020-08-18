@@ -35,17 +35,17 @@ batch:
         image:
           - aws/codebuild/standard:4.0
         variables:
+          TESTS:
+            - "integration"
+            - "asan"
           S2N_LIBCRYPTO:
             - openssl-1.1.1
             - openssl-1.0.2
             - openssl-1.0.2-fips
           GCC_VERSION:
-            - 4.8
-            - 6
-            - 9
-          S2N_CORKED_IO:
-            - true
-            - false
+            - "4.8"
+            - "6"
+            - "9"
 
 phases:
   install:
@@ -59,7 +59,7 @@ phases:
   build:
     commands:
       - printenv
-      - echo S2N_LIBCRYPTO=$S2N_LIBCRYPTO GCC_VERSION=$GCC_VERSION $CB_BIN_DIR/s2n_codebuild.sh
+      - echo TESTS=$TESTS S2N_LIBCRYPTO=$S2N_LIBCRYPTO GCC_VERSION=$GCC_VERSION $CB_BIN_DIR/s2n_codebuild.sh
   post_build:
     commands:
       - echo Build completed on `date`
