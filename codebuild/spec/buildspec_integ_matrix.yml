@@ -32,10 +32,11 @@ batch:
         image:
           - aws/codebuild/standard:4.0
         variables:
+          TESTS: ['one','two','three']
           GCC_VERSION:
-            - "fourdoteight"
-            - "six"
-            - "nine"
+            - 'fourdoteight'
+            - 'six'
+            - 'nine'
           S2N_LIBCRYPTO:
             - "openssl-1.1.1"
             - "openssl-1.0.2"
