@@ -43,27 +43,27 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         variables:
-          - S2N_LIBCRYPTO: openssl-1.1.1
-          - BUILD_S2N: true
-          - TESTS: integration
-          - GCC_VERSION: 9
+          S2N_LIBCRYPTO: openssl-1.1.1
+          BUILD_S2N: true
+          TESTS: integration
+          GCC_VERSION: 9
 
     - identifier: s2nIntegrationLibreSSLGcc9
       buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         variables:
-          - S2N_LIBCRYPTO: libressl
-          - BUILD_S2N: true
-          - TESTS: integration
-          - GCC_VERSION: 9
+          S2N_LIBCRYPTO: libressl
+          BUILD_S2N: true
+          TESTS: integration
+          GCC_VERSION: 9
 
     - identifier: s2nIntegrationOpenSSL111Gcc6Coverage
       buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         variables:
-          - S2N_LIBCRYPTO: openssl-1.1.1
-          - BUILD_S2N: true
-          - TESTS: integration
-          - GCC_VERSION: 6
-          - S2N_COVERAGE: true
-          - CODECOV_IO_UPLOAD: true
+          S2N_LIBCRYPTO: openssl-1.1.1
+          BUILD_S2N: true
+          TESTS: integration
+          GCC_VERSION: 6
+          S2N_COVERAGE: true
+          CODECOV_IO_UPLOAD: true
