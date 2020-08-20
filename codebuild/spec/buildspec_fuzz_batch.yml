@@ -22,6 +22,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu_fuzz_artifacts.yml
       env:
         privileged-mode: true
+        compute-type: BUILD_GENERAL1_SMALL
         variables:
           S2N_LIBCRYPTO: openssl-1.1.1
           LATEST_CLANG: true
@@ -30,10 +31,11 @@ batch:
           FUZZ_COVERAGE: false
           CODECOV_IO_UPLOAD: false
 
-    - identifier: s2nfuzzerOpenSSL102FIPS
+    - identifier: s2nfuzzerOpenSSL102
       buildspec: codebuild/spec/buildspec_ubuntu_fuzz_artifacts.yml
       env:
         privileged-mode: true
+        compute-type: BUILD_GENERAL1_SMALL
         variables:
           S2N_LIBCRYPTO: openssl-1.0.2
           LATEST_CLANG: true
@@ -44,6 +46,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu_fuzz_artifacts.yml
       env:
         privileged-mode: true
+        compute-type: BUILD_GENERAL1_SMALL
         variables:
           S2N_LIBCRYPTO: openssl-1.0.2-fips
           LATEST_CLANG: true
