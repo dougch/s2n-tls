@@ -32,10 +32,14 @@ batch:
         image:
           - aws/codebuild/standard:4.0
         variables:
-          TESTS:
-            - 'one'
-          GCCVERSION:
-            - 'fourdoteight'
+          GCC_VERSION:
+            - '4.8'
+            - '6'
+            - '9'
+          S2N_LIBCRYPTO:
+            - "openssl-1.1.1"
+            - "openssl-1.0.2"
+            - "openssl-1.0.2-fips"
 phases:
   install:
     runtime-versions:
