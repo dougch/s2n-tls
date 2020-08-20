@@ -48,11 +48,11 @@ phases:
       - echo Entered the install phase...
   pre_build:
     commands:
-      - echo S2N_LIBCRYPTO=$S2N_LIBCRYPTO GCC_VERSION=$GCCVERSION $CB_BIN_DIR/install_default_dependencies.sh
+      - echo S2N_LIBCRYPTO=$S2N_LIBCRYPTO GCC_VERSION=$GCC_VERSION $CB_BIN_DIR/install_default_dependencies.sh
   build:
     commands:
       - printenv
-      - echo S2N_LIBCRYPTO=$S2N_LIBCRYPTO GCC_VERSION=$GCCVERSION $CB_BIN_DIR/s2n_codebuild.sh
+      - echo S2N_LIBCRYPTO=$S2N_LIBCRYPTO GCC_VERSION=$GCC_VERSION $CB_BIN_DIR/s2n_codebuild.sh
   post_build:
     commands:
       - echo Build completed on `date`
