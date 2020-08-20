@@ -1,0 +1,51 @@
+---
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"). You may not use
+# this file except in compliance with the License. A copy of the License is
+# located at
+#
+# http://aws.amazon.com/apache2.0/
+#
+# or in the "license" file accompanying this file. This file is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied. See the License for the specific language governing permissions and
+# limitations under the License.
+version: 0.2
+
+# Doc for batch https://docs.aws.amazon.com/codebuild/latest/userguide/batch-build-buildspec.html#build-spec.batch.build-list
+batch:
+  build-list:
+
+# Consolidated Integration tests
+    - identifier: s2nfuzzerOpenSSL111Coverage
+      buildspec: codebuild/spec/buildspec_ubuntu_fuzz_artifacts.yml
+      env:
+        privileged-mode: true
+        variables:
+          S2N_LIBCRYPTO: openssl-1.1.1
+          LATEST_CLANG: true
+          TESTS: fuzz
+          FUZZ_TIMEOUT_SEC: 60
+          FUZZ_COVERAGE: false
+          CODECOV_IO_UPLOAD: false
+
+    - identifier: s2nfuzzerOpenSSL102FIPS
+      buildspec: codebuild/spec/buildspec_ubuntu_fuzz_artifacts.yml
+      env:
+        privileged-mode: true
+        variables:
+          S2N_LIBCRYPTO: openssl-1.0.2
+          LATEST_CLANG: true
+          TESTS: fuzz
+          FUZZ_TIMEOUT_SEC: 60
+
+    - identifier: s2nfuzzerOpenSSL102FIPS
+      buildspec: codebuild/spec/buildspec_ubuntu_fuzz_artifacts.yml
+      env:
+        privileged-mode: true
+        variables:
+          S2N_LIBCRYPTO: openssl-1.0.2-fips
+          LATEST_CLANG: true
+          TESTS: fuzz
+          FUZZ_TIMEOUT_SEC: 60
