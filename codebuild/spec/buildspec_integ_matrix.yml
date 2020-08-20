@@ -48,7 +48,7 @@ batch:
 phases:
   install:
     runtime-versions:
-      python: 3.7
+      python: latest
     commands:
       - echo Entered the install phase...
   pre_build:
