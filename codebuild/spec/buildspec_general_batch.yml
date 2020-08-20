@@ -22,6 +22,7 @@ batch:
   build-list:
     - identifier: asan_openssl111_coverage
       env:
+        compute-type: BUILD_GENERAL1_SMALL
         variables:
           TESTS: asan
           GCC_VERSION: '6'
@@ -33,6 +34,7 @@ batch:
 
     - identifier: asan_openssl102
       env:
+        compute-type: BUILD_GENERAL1_SMALL
         variables:
           TESTS: asan
           GCC_VERSION: '6'
@@ -41,6 +43,7 @@ batch:
 
     - identifier: valgrind_openssl102
       env:
+        compute-type: BUILD_GENERAL1_SMALL
         variables:
           TESTS: valgrind
           GCC_VERSION: '6'
