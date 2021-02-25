@@ -144,8 +144,3 @@ AWS Security via our [vulnerability reporting page](http://aws.amazon.com/securi
 
 If you package or distribute s2n, or use s2n as part of a large multi-user service, you may be eligible for pre-notification of future s2n releases. Please contact s2n-pre-notification@amazon.com.  
 
-## Contributing to s2n
-If you are interested in contributing to s2n, please see our [development guide](https://github.com/awslabs/s2n/blob/main/docs/DEVELOPMENT-GUIDE.md).
-
-## Language Bindings for s2n
-See our [language bindings list](https://github.com/awslabs/s2n/blob/main/docs/BINDINGS.md) for language bindings for s2n that we're aware of. 
