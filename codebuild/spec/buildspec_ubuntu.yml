@@ -55,12 +55,3 @@ phases:
           cd third-party-src;
         fi
       - $CB_BIN_DIR/install_default_dependencies.sh
-  build:
-    commands:
-      - printenv
-      - $CB_BIN_DIR/s2n_codebuild.sh
-  post_build:
-    commands:
-      - echo Build completed on `date`
-      - echo Uploading CodeCov.io artifacts
-      - $CB_BIN_DIR/s2n_after_codebuild.sh
