@@ -28,7 +28,7 @@ from s2n_test_constants import *
 # if the handshake is negotiated with any cipher.
 well_known_endpoints = [
     {"endpoint": "www.akamai.com"},
-    {"endpoint": "www.amazon.com"},
+    #    {"endpoint": "www.amazon.com"},
     {"endpoint": "s3.us-west-2.amazonaws.com"},
     {"endpoint": "www.apple.com"},
     {"endpoint": "www.att.com"},
@@ -110,15 +110,18 @@ def print_result(result_prefix, return_code):
         else:
             print("FAILED")
 
+
 def try_client_handshake(endpoint, arguments, expected_cipher):
     """
     Having our own trust store means we need to update it periodically.
     TODO: warn if there is drift between the OS CA certs and our own.
     see https://letsencrypt.org/docs/dst-root-ca-x3-expiration-september-2021/
     """
-    s2nc_cmd = ["../../bin/s2nc", "-f", "./trust-store/ca-bundle.crt", "-a", "http/1.1"] + arguments + [str(endpoint)]
+    s2nc_cmd = ["../../bin/s2nc", "-f", "./trust-store/ca-bundle.crt",
+                "-a", "http/1.1"] + arguments + [str(endpoint)]
     currentDir = os.path.dirname(os.path.realpath(__file__))
-    s2nc = subprocess.Popen(s2nc_cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, cwd=currentDir)
+    s2nc = subprocess.Popen(s2nc_cmd, stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE, cwd=currentDir)
 
     found = 0
     expected_output = "Cipher negotiated: "
@@ -139,6 +142,7 @@ def try_client_handshake(endpoint, arguments, expected_cipher):
 
     return 0
 
+
 def well_known_endpoints_test(use_corked_io, tls13_enabled, fips_mode):
 
     arguments = []
@@ -158,7 +162,8 @@ def well_known_endpoints_test(use_corked_io, tls13_enabled, fips_mode):
     if len(opt_list) != 0:
         msg += " using "
         if len(opt_list) > 1:
-            msg += ", ".join(opt_list[:-2] + [opt_list[-2] + " and " + opt_list[-1]])
+            msg += ", ".join(opt_list[:-2] +
+                             [opt_list[-2] + " and " + opt_list[-1]])
         else:
             msg += opt_list[0]
 
@@ -182,16 +187,20 @@ def well_known_endpoints_test(use_corked_io, tls13_enabled, fips_mode):
             else:
                 time.sleep(i)
 
-        print_result("Endpoint: %-35sExpected Cipher: %-40s... " % (endpoint, expected_cipher if expected_cipher else "Any"), ret)
+        print_result("Endpoint: %-35sExpected Cipher: %-40s... " %
+                     (endpoint, expected_cipher if expected_cipher else "Any"), ret)
         if ret != 0:
             failed += 1
 
     return failed
 
+
 def main(argv):
 
-    parser = argparse.ArgumentParser(description="Run client endpoint handshake tests")
-    parser.add_argument("--no-tls13", action="store_true", help="Disable TLS 1.3 tests")
+    parser = argparse.ArgumentParser(
+        description="Run client endpoint handshake tests")
+    parser.add_argument("--no-tls13", action="store_true",
+                        help="Disable TLS 1.3 tests")
     args = parser.parse_args()
 
     fips_mode = False
@@ -202,16 +211,20 @@ def main(argv):
     failed = 0
 
     # TLS 1.2 Tests
-    failed += well_known_endpoints_test(use_corked_io=False, tls13_enabled=False, fips_mode=fips_mode)
-    failed += well_known_endpoints_test(use_corked_io=True, tls13_enabled=False, fips_mode=fips_mode)
+    failed += well_known_endpoints_test(use_corked_io=False,
+                                        tls13_enabled=False, fips_mode=fips_mode)
+    failed += well_known_endpoints_test(use_corked_io=True,
+                                        tls13_enabled=False, fips_mode=fips_mode)
 
     # TLS 1.3 Tests
     if not args.no_tls13:
-        failed += well_known_endpoints_test(use_corked_io=False, tls13_enabled=True, fips_mode=fips_mode)
-        failed += well_known_endpoints_test(use_corked_io=True, tls13_enabled=True, fips_mode=fips_mode)
+        failed += well_known_endpoints_test(use_corked_io=False,
+                                            tls13_enabled=True, fips_mode=fips_mode)
+        failed += well_known_endpoints_test(use_corked_io=True,
+                                            tls13_enabled=True, fips_mode=fips_mode)
 
     return failed
 
+
 if __name__ == "__main__":
     sys.exit(main(sys.argv[1:]))
-
