@@ -21,38 +21,38 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu_integ_boringlibre.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
 
     - identifier: s2nIntegrationAwsLc
       buildspec: codebuild/spec/buildspec_ubuntu_integ_awslc.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
 
     - identifier: s2nIntegrationOpenSSL111PlusCoverage
       buildspec: codebuild/spec/buildspec_ubuntu_integ_openssl111.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
 
     - identifier: s2nIntegrationOpenSSL102Plus
       buildspec: codebuild/spec/buildspec_ubuntu_integ_openssl102.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
 
     - identifier: s2nIntegrationOpenSSL102AsanValgrind
       buildspec: codebuild/spec/buildspec_ubuntu_integ_openssl102_asanvalgrind.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
 
     # Integration V2 tests
     - identifier: s2nIntegrationV2ClientAuthentication
       buildspec: codebuild/spec/buildspec_ubuntu_integrationv2.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
         variables:
           INTEGV2_TEST: test_client_authentication
 
@@ -60,7 +60,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu_integrationv2.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
         variables:
           INTEGV2_TEST: test_dynamic_record_sizes
 
@@ -68,7 +68,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu_integrationv2.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
         variables:
           INTEGV2_TEST: test_key_update
 
@@ -76,7 +76,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu_integrationv2.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
         variables:
           INTEGV2_TEST: test_happy_path
 
@@ -84,7 +84,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu_integrationv2.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
         variables:
           INTEGV2_TEST: test_session_resumption
 
@@ -92,7 +92,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu_integrationv2.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
         variables:
           INTEGV2_TEST: test_sni_match
 
@@ -100,7 +100,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu_integrationv2.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
         variables:
           INTEGV2_TEST: test_fragmentation
 
@@ -108,7 +108,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu_integrationv2.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
         variables:
           INTEGV2_TEST: test_hello_retry_requests
 
@@ -116,7 +116,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu_integrationv2.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
         variables:
           INTEGV2_TEST: test_pq_handshake
 
@@ -124,7 +124,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu_integrationv2.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
         variables:
           INTEGV2_TEST: test_signature_algorithms
 
@@ -132,7 +132,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu_integrationv2.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
         variables:
           INTEGV2_TEST: test_version_negotiation
 
@@ -140,7 +140,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu_integrationv2.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
         variables:
           INTEGV2_TEST: test_well_known_endpoints
 
@@ -148,7 +148,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu_integrationv2.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
         variables:
           INTEGV2_TEST: test_early_data
 
@@ -156,7 +156,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu_integrationv2.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
         variables:
           INTEGV2_TEST: test_external_psk
 
@@ -164,7 +164,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu_integrationv2.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
         variables:
           INTEGV2_TEST: test_cross_compatibility
 
@@ -173,7 +173,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
         variables:
           S2N_LIBCRYPTO: boringssl
           BUILD_S2N: true
@@ -184,7 +184,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
         variables:
           S2N_LIBCRYPTO: openssl-1.1.1
           BUILD_S2N: true
@@ -196,7 +196,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
         variables:
           S2N_LIBCRYPTO: openssl-1.1.1
           BUILD_S2N: true
@@ -207,7 +207,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
         variables:
           S2N_LIBCRYPTO: libressl
           BUILD_S2N: true
@@ -218,7 +218,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
         variables:
           S2N_LIBCRYPTO: openssl-1.1.1
           BUILD_S2N: true
@@ -226,7 +226,13 @@ batch:
           GCC_VERSION: 6
           S2N_COVERAGE: true
           CODECOV_IO_UPLOAD: true
-
+    - identifier: s2nIntegrationV2SSLyze
+      buildspec: codebuild/spec/buildspec_ubuntu_integrationv2.yml
+      env:
+        compute-type: BUILD_GENERAL1_2XLARGE
+        privileged-mode: true
+        variables:
+          INTEGV2_TEST: test_sslyze
     # Saw
     - identifier: s2nSawBike
       buildspec: codebuild/spec/buildspec_ubuntu.yml
@@ -243,7 +249,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
         variables:
           TESTS: sawHMACPlus
           SAW: true
@@ -253,7 +259,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
         variables:
           TESTS: tls
           SAW: true
@@ -264,7 +270,7 @@ batch:
       buildspec: codebuild/spec/buildspec_sidetrail.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_2XLARGE
+        compute-type: BUILD_GENERAL1_LARGE
         image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/linux-docker-images:sidetrail
         variables:
           TESTS: sidetrail
@@ -274,7 +280,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
         variables:
           TESTS: valgrind
           GCC_VERSION: 6
@@ -285,7 +291,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
         variables:
           TESTS: valgrind
           GCC_VERSION: 9
@@ -296,7 +302,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
         variables:
           TESTS: valgrind
           GCC_VERSION: '6'
@@ -307,7 +313,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
         variables:
           TESTS: asan
           GCC_VERSION: '6'
@@ -321,7 +327,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
         variables:
           TESTS: asan
           GCC_VERSION: '6'
@@ -332,7 +338,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_SMALL
+        compute-type: BUILD_GENERAL1_2XLARGE
         variables:
           TESTS: unit
           GCC_VERSION: '9'
@@ -356,7 +362,7 @@ batch:
       env:
         image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_SMALL
+        compute-type: BUILD_GENERAL1_2XLARGE
         variables:
           TESTS: unit
           S2N_NO_PQ: 1
@@ -365,7 +371,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
         variables:
           TESTS: interning
           BUILD_S2N: 'true'
@@ -375,7 +381,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu_fuzz_artifacts.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
         image: aws/codebuild/standard:5.0
         variables:
           S2N_LIBCRYPTO: openssl-1.1.1
@@ -385,23 +391,11 @@ batch:
           FUZZ_COVERAGE: true
           CODECOV_IO_UPLOAD: true
 
-    - identifier: s2nFuzzerOpenSSL102
-      buildspec: codebuild/spec/buildspec_ubuntu_fuzz_artifacts.yml
-      env:
-        privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
-        image: aws/codebuild/standard:5.0
-        variables:
-          S2N_LIBCRYPTO: openssl-1.0.2
-          LATEST_CLANG: true
-          TESTS: fuzz
-          FUZZ_TIMEOUT_SEC: 60
-
     - identifier: s2nFuzzerOpenSSL102FIPS
       buildspec: codebuild/spec/buildspec_ubuntu_fuzz_artifacts.yml
       env:
         privileged-mode: true
-        compute-type: BUILD_GENERAL1_LARGE
+        compute-type: BUILD_GENERAL1_2XLARGE
         image: aws/codebuild/standard:5.0
         variables:
           S2N_LIBCRYPTO: openssl-1.0.2-fips
