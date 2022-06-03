@@ -84,7 +84,7 @@ for target in $OPENSSL_1_0 $TARGET_LIBCRYPTO_PATH
 do
   echo "testing static linking with $target"
   mkdir -p $target/bin
-  cc -fPIE -Iapi -I$target/include build/static/app.c build/static/lib/libs2n.a $target/lib/libcrypto.a -lpthread -ldl -o $target/bin/test-app
+  cc -fPIE -Iapi -I$target/include build/static/app.c build/static/lib/libs2n.a $target/lib*/libcrypto.a -lpthread -ldl -o $target/bin/test-app
   nm $target/bin/test-app | grep -q 'T s2n$BN_CTX_new' || fail "$target: libcrypto symbols were not prefixed"
   nm $target/bin/test-app | grep -q 'T BN_CTX_new' || fail "$target: libcrypto was not linked in application"
   # make sure the app doesn't crash
