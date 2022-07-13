@@ -21,6 +21,10 @@ case "${S2N_BUILD_PRESET-default}" in
         : "${S2N_LIBCRYPTO:=awslc}"
         : "${GCC_VERSION:=9}"
         ;;
+    "awslc_gcc12")
+        : "${S2N_LIBCRYPTO:=awslc}"
+        : "${GCC_VERSION:=12}"
+        ;;
     "awslc-fips_gcc4-8")
         : "${S2N_LIBCRYPTO:=awslc-fips}"
         : "${GCC_VERSION:=4.8}"
@@ -28,6 +32,10 @@ case "${S2N_BUILD_PRESET-default}" in
     "awslc-fips_gcc9")
         : "${S2N_LIBCRYPTO:=awslc-fips}"
         : "${GCC_VERSION:=9}"
+        ;;
+    "awslc-fips_gcc12")
+        : "${S2N_LIBCRYPTO:=awslc-fips}"
+        : "${GCC_VERSION:=12}"
         ;;
     "libressl_gcc6")
         : "${S2N_LIBCRYPTO:=libressl}"
@@ -66,6 +74,10 @@ case "${S2N_BUILD_PRESET-default}" in
     "openssl-1.1.1_gcc9")
         : "${S2N_LIBCRYPTO:=openssl-1.1.1}"
         : "${GCC_VERSION:=9}"
+        ;;
+    "openssl-1.1.1_gcc12")
+        : "${S2N_LIBCRYPTO:=openssl-1.1.1}"
+        : "${GCC_VERSION:=12}"
         ;;
 esac
 
