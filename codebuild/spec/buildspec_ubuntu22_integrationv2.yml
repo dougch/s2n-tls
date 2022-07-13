@@ -14,8 +14,8 @@
 version: 0.2
 
 env:
+  image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu22_codebuild
   variables:
-    # CODEBUILD_ is a reserved namespace.
     CB_BIN_DIR: "./codebuild/bin"
 
 phases:
