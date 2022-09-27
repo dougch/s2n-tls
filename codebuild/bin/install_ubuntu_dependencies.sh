@@ -35,6 +35,7 @@ get_rust() {
 
 base_packages() {
   echo "Installing repositories and base packages"
+  apt-get update --option Acquire::ForceIPv4=true --option Acquire::Retries=100 --option Acquire::http::Timeout=60
   apt update -y
   apt install -y software-properties-common
   add-apt-repository ppa:ubuntu-toolchain-r/test -y
