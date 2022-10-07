@@ -53,10 +53,15 @@ base_packages() {
   apt-get -y install --no-install-recommends ${DEPENDENCIES}
 }
 
-
 base_packages
 github_apt
 get_rust
+
+#if cmake version is 3.10
+#   Download the cmake self-extracting tar
+#   remove the apt install cmake
+#   install 3.20
+#fi
 
 # If prlimit is not on our current PATH, download and compile prlimit manually. s2n needs prlimit to memlock pages
 if ! type prlimit > /dev/null && [[ ! -d "$PRLIMIT_INSTALL_DIR" ]]; then
@@ -65,10 +70,13 @@ if ! type prlimit > /dev/null && [[ ! -d "$PRLIMIT_INSTALL_DIR" ]]; then
 fi
 
 if [[ "$TESTS" == "ctverif" || "$TESTS" == "ALL" ]] && [[ ! -d "$CTVERIF_INSTALL_DIR" ]]; then
-    mkdir -p "$CTVERIF_INSTALL_DIR" && codebuild/bin/install_ctverif.sh "$CTVERIF_INSTALL_DIR" > /dev/null ; fi
+    mkdir -p "$CTVERIF_INSTALL_DIR" && codebuild/bin/install_ctverif.sh "$CTVERIF_INSTALL_DIR" > /dev/null; 
+fi
 
 if [[ "$TESTS" == "sidetrail" || "$TESTS" == "ALL" ]] ; then
-    codebuild/bin/install_sidetrail_dependencies.sh ; fi
+    codebuild/bin/install_sidetrail_dependencies.sh ; 
+fi
 
 if [[ "$TESTS" == "sidetrail" || "$TESTS" == "ALL" ]] && [[ ! -d "$SIDETRAIL_INSTALL_DIR" ]]; then
-    mkdir -p "$SIDETRAIL_INSTALL_DIR" && codebuild/bin/install_sidetrail.sh "$SIDETRAIL_INSTALL_DIR" > /dev/null ; fi
+    mkdir -p "$SIDETRAIL_INSTALL_DIR" && codebuild/bin/install_sidetrail.sh "$SIDETRAIL_INSTALL_DIR" > /dev/null; 
+fi
