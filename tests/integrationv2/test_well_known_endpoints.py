@@ -84,7 +84,7 @@ else:
             {"cipher": "ECDHE-RSA-AES256-GCM-SHA384", "kem": "NONE"},
     }
 
-if get_flag(S2N_USE_CRITERION):
+if get_flag(S2N_USE_CRITERION) != "off":
     provider = [CriterionS2N]
     timeout = 60
 else:
