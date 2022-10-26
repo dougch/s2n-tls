@@ -5,7 +5,6 @@ import threading
 from common import ProviderOptions, Ciphers, Curves, Protocols, Certificates, Signatures
 from global_flags import get_flag, S2N_PROVIDER_VERSION, S2N_FIPS_MODE
 from global_flags import S2N_USE_CRITERION
-from utils import find_files
 
 
 TLS_13_LIBCRYPTOS = {
@@ -905,3 +904,28 @@ class GnuTLS(Provider):
     @classmethod
     def supports_signature(cls, signature):
         return GnuTLS.sigalg_to_priority_str(signature) is not None
+
+def find_files(file_glob, root_dir=".", mode=None):
+    """
+    find util in python form.
+    file_glob: a snippet of the filename, e.g. ".py"
+    root_dir: starting point for search
+    mode is an octal representation of owner/group/other, e.g.: '0o644'
+    """
+    result = []
+    for root, dirs, files in os.walk(root_dir):
+        for file in files:
+            if file_glob in file:
+                full_name = os.path.abspath(os.path.join(root, file))
+                if mode:
+                    try:
+                        stat = oct(S_IMODE(os.stat(full_name).st_mode))
+                        if stat == mode:
+                            result.append(full_name)
+                    except FileNotFoundError:
+                        # symlinks
+                        pass
+                else:
+                    result.append(full_name)
+
+    return result

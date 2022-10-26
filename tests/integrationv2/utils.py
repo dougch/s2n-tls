@@ -1,5 +1,6 @@
 import os
 from common import Protocols, Curves, Ciphers
+from providers import S2N, OpenSSL
 from global_flags import get_flag, S2N_FIPS_MODE, S2N_PROVIDER_VERSION
 from stat import *
 
@@ -112,27 +113,3 @@ def invalid_test_parameters(*args, **kwargs):
     return False
 
 
-def find_files(file_glob, root_dir=".", mode=None):
-    """
-    find util in python form.
-    file_glob: a snippet of the filename, e.g. ".py"
-    root_dir: starting point for search
-    mode is an octal representation of owner/group/other, e.g.: '0o644'
-    """
-    result = []
-    for root, dirs, files in os.walk(root_dir):
-        for file in files:
-            if file_glob in file:
-                full_name = os.path.abspath(os.path.join(root, file))
-                if mode:
-                    try:
-                        stat = oct(S_IMODE(os.stat(full_name).st_mode))
-                        if stat == mode:
-                            result.append(full_name)
-                    except FileNotFoundError:
-                        # symlinks
-                        pass
-                else:
-                    result.append(full_name)
-
-    return result
