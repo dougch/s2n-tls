@@ -27,3 +27,4 @@ artifacts:
     - "**/*.json"
   base-directory: "tests/integrationv2/target/criterion"
   discard-paths: no
+
