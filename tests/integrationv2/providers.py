@@ -339,12 +339,12 @@ class CriterionS2N(S2N):
 
     def _find_s2n_benchmark(self, pattern):
         # Use executable bit to find the correct file.
-        result = find_files(pattern, root_dir=self.cargo_root, mode='0o755')
+        result = find_files(pattern, root_dir=self.cargo_root, mode='0o775')
         if len(result) > 0:
             return result[0]
         else:
             raise FileNotFoundError(
-                f"s2n criterion benchmark not found {result}.")
+                f"s2n criterion benchmark not found {result} with expected file mask.")
 
     def _find_cargo(self):
         # return a path to the highest level dir containing Cargo.toml

@@ -5,8 +5,8 @@ from constants import TRUST_STORE_BUNDLE
 from configuration import available_ports, PROTOCOLS
 from fixtures import managed_process
 from common import ProviderOptions, Protocols, Ciphers, pq_enabled
-from global_flags import get_flag, S2N_FIPS_MODE, S2N_USE_CRITERION
-from providers import Provider, S2N, CriterionS2N
+from global_flags import get_flag, S2N_FIPS_MODE
+from providers import Provider, S2N
 from utils import invalid_test_parameters, get_parameter_name, to_bytes
 
 ENDPOINTS = [
@@ -84,17 +84,10 @@ else:
             {"cipher": "ECDHE-RSA-AES256-GCM-SHA384", "kem": "NONE"},
     }
 
-if get_flag(S2N_USE_CRITERION) != "off":
-    provider = [CriterionS2N]
-    timeout = 60
-else:
-    provider = [S2N]
-    timeout = 5
-
 @pytest.mark.uncollect_if(func=invalid_test_parameters)
 @pytest.mark.parametrize("protocol", PROTOCOLS, ids=get_parameter_name)
 @pytest.mark.parametrize("endpoint", ENDPOINTS, ids=get_parameter_name)
-@pytest.mark.parametrize("provider", provider, ids=get_parameter_name)
+@pytest.mark.parametrize("provider", [S2N], ids=get_parameter_name)
 @pytest.mark.parametrize("cipher", CIPHERS, ids=get_parameter_name)
 def test_well_known_endpoints(managed_process, protocol, endpoint, provider, cipher):
     port = "443"
@@ -116,7 +109,7 @@ def test_well_known_endpoints(managed_process, protocol, endpoint, provider, cip
     # expect_stderr=True because S2N sometimes receives OCSP responses:
     # https://github.com/aws/s2n-tls/blob/14ed186a13c1ffae7fbb036ed5d2849ce7c17403/bin/echo.c#L180-L184
     client = managed_process(provider, client_options,
-                             timeout=timeout, expect_stderr=True)
+                             timeout=5, expect_stderr=True)
 
     expected_result = EXPECTED_RESULTS.get((endpoint, cipher), None)
 
