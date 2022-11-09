@@ -5,6 +5,7 @@ import threading
 from common import ProviderOptions, Ciphers, Curves, Protocols, Certificates, Signatures
 from global_flags import get_flag, S2N_PROVIDER_VERSION, S2N_FIPS_MODE
 from global_flags import S2N_USE_CRITERION
+from stat import *
 
 
 TLS_13_LIBCRYPTOS = {
