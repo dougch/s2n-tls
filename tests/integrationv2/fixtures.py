@@ -5,7 +5,7 @@ import threading
 import time
 
 from processes import ManagedProcess
-from providers import Provider, CriterionS2N
+from providers import Provider, CriterionS2N, S2N
 from common import ProviderOptions, Protocols
 from global_flags import get_flag, S2N_USE_CRITERION
 
@@ -24,7 +24,7 @@ def managed_process():
 
     def _fn(provider_class: Provider, options: ProviderOptions, timeout=5, send_marker=None, close_marker=None,
             expect_stderr=None, kill_marker=None, send_with_newline=None):
-        if get_flag(S2N_USE_CRITERION) != "off":
+        if provider_class == S2N and get_flag(S2N_USE_CRITERION) != "off":
             provider_class = CriterionS2N
             # This comes from the number of iterations specific in the rust benchmark handler(s).
             # currently set at 10 iterations, so give us 10x more time.
