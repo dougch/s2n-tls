@@ -13,6 +13,7 @@ TLS_13_LIBCRYPTOS = {
     "openssl-1.1.1"
 }
 
+
 class Provider(object):
     """
     A provider defines a specific provider of TLS. This could be
@@ -323,11 +324,11 @@ class CriterionS2N(S2N):
     def _find_s2n_benchmark(self, pattern):
         # Use executable bit to find the correct file.
         result = find_files(pattern, root_dir=self.cargo_root, mode='0o775')
-        if len(result) > 0:
-            return result[0]
-        else:
+        if len(result) != 1:
             raise FileNotFoundError(
-                f"s2n criterion benchmark not found {result} with expected file mask.")
+                f"Exactly one s2n criterion benchmark not found {result} with expected file mask.")
+        else:
+            return result[0]
 
     def _find_cargo(self):
         # return a path to the highest level dir containing Cargo.toml
@@ -888,6 +889,7 @@ class GnuTLS(Provider):
     @classmethod
     def supports_signature(cls, signature):
         return GnuTLS.sigalg_to_priority_str(signature) is not None
+
 
 def find_files(file_glob, root_dir=".", mode=None):
     """
