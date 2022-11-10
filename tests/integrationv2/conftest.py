@@ -24,7 +24,7 @@ def pytest_configure(config):
 
     no_pq = config.getoption('no-pq', 0)
     fips_mode = config.getoption('fips-mode', 0)
-    use_criterion = config.getoption('proivder-criterion', 0)
+    use_criterion = config.getoption('provider-criterion', 0)
     if no_pq == 1:
         set_flag(S2N_NO_PQ, True)
     if fips_mode == 1:
