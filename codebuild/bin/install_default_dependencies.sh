@@ -120,12 +120,6 @@ if [[ "$TESTS" == "integrationv2" || "$TESTS" == "ALL" ]]; then
     fi
 
     if [[ "$DISTRO" == "ubuntu" ]]; then
-        # Install SSLyze for all Integration Tests on Ubuntu.
-        # There is a nassl dependancy issue preventing this from working on on AL2 ARM (others?).
-        if [[ "$S2N_NO_SSLYZE" != "true" ]]; then
-            codebuild/bin/install_sslyze.sh
-        fi
-
         if [[ ! -x "$APACHE2_INSTALL_DIR/apache2.conf" ]]; then
             codebuild/bin/install_apache2.sh codebuild/bin/apache2 "$APACHE2_INSTALL_DIR"
         fi
