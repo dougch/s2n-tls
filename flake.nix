@@ -6,7 +6,7 @@
   outputs = { self, nix, nixpkgs, flake-utils }: 
      flake-utils.lib.eachDefaultSystem (system:
       let pkgs = nixpkgs.legacyPackages.${system};
-   in {
+   in rec {
       packages.s2n-tls = pkgs.stdenv.mkDerivation {
         src = self;
         name = "s2n-tls";
@@ -23,6 +23,7 @@
         ];
 
       };
+      defaultPackage = packages.s2n-tls; 
       
    });
  }
