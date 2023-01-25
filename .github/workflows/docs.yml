@@ -17,8 +17,8 @@ jobs:
         if: ${{ github.event_name == 'pull_request' }}
         uses: actions/upload-artifact@v3
         with:
-            name: s2n-tls-doxygen
-            path: |
+          name: s2n-tls-doxygen
+          path: |
               docs/doxygen/output
       - name: Deploy documentation to gh-pages
         uses: peaceiris/actions-gh-pages@v3
