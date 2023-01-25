@@ -3,13 +3,11 @@
 
   inputs.nixpkgs.url = github:NixOS/nixpkgs/nixos-22.05;
 
-  outputs = { self, nix, nixpkgs }: 
-  let
-     system = builtins.currentSystem or "x86_64-linux";
-     pkgs = import nixpkgs { system = builtins.currentSystem or "x86_64-linux"; };
+  outputs = { self, nix, nixpkgs, flake-utils }: 
+     flake-utils.lib.eachDefaultSystem (system:
+      let pkgs = nixpkgs.legacyPackages.${system};
    in {
-      packages.${system}.default = pkgs.stdenv.mkDerivation
-      {
+      packages.s2n-tls = pkgs.stdenv.mkDerivation {
         src = self;
         name = "s2n-tls";
         inherit system; 
@@ -25,7 +23,6 @@
         ];
 
       };
-      devShell.x86_64-linux = 
-        pkgs.mkShell { buildInputs = [ pkgs.openssl pkgs.cmake pkgs.gcc pkgs.clang pkgs.ninja ]; };
-   };
+      
+   });
  }
