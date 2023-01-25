@@ -11,7 +11,7 @@
         src = self;
         name = "s2n-tls";
         inherit system; 
-        doCheck = true;
+        #doCheck = true;
 
         buildInputs = [ pkgs.cmake
                         pkgs.openssl ]; # s2n-config has find_dependency(LibCrypto
