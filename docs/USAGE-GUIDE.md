@@ -84,28 +84,6 @@ We keep the build artifacts in the *-build directory:
 cd libcrypto-build
 ```
 
-### Download the desired Openssl version:
-Openssl 3.0.5
-```shell
-curl -L -o openssl.tar.gz https://github.com/openssl/openssl/archive/refs/tags/openssl-3.0.5.tar.gz
-tar -xzvf openssl-3.0.5.tar.gz
-cd `tar ztf openssl-3.0.5.tar.gz | head -n1 | cut -f1 -d/`
-```
-
-OpenSSL-1.1.1
-```shell
-curl -LO https://github.com/openssl/openssl/archive/refs/tags/OpenSSL_1_1_1.tar.gz
-tar -xzvf OpenSSL_1_1_1.tar.gz
-cd `tar ztf OpenSSL_1_1_1.tar.gz | head -n1 | cut -f1 -d/`
-```
-
-OpenSSL-1.0.2
-```shell
-curl -LO https://github.com/openssl/openssl/archive/refs/tags/OpenSSL_1_0_2.tar.gz
-tar -xzvf OpenSSL_1_0_2.tar.gz
-cd `tar ztf OpenSSL_1_0_2.tar.gz | head -n1 | cut -f1 -d/`
-```
-
 ### Build Openssl
 The following config command disables numerous Openssl features and algorithms which are not used
 by s2n-tls. A minimal feature-set can help prevent exposure to security vulnerabilities.
