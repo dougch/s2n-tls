@@ -11,19 +11,19 @@
         src = self;
         name = "s2n-tls";
         inherit system; 
-        #doCheck = true;
 
         buildInputs = [ pkgs.cmake
                         pkgs.openssl ]; # s2n-config has find_dependency(LibCrypto
 
         cmakeFlags = [
-            "-DBUILD_SHARED_LIBS=OFF"
+            "-DBUILD_SHARED_LIBS=ON"
             "-DUNSAFE_TREAT_WARNINGS_AS_ERRORS=OFF" # disable -Werror
+            "-DCMAKE_BUILD_TYPE=RelWithDebInfo"
             "-DS2N_NO_PQ=1"
         ];
 
       };
-      defaultPackage = packages.s2n-tls; 
+      defaultPackage = packages.s2n-tls;
       
    });
  }
