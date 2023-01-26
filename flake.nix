@@ -1,7 +1,11 @@
 {
   description = "A flake for s2n-tls";
 
-  inputs.nixpkgs.url = github:NixOS/nixpkgs/nixos-22.05;
+  inputs =  {
+    nixpkgs.url = github:NixOS/nixpkgs/nixos-22.05;
+    flake-utils.url = "github:numtide/flake-utils";
+    s2n-tls.url = "github:dougch/s2n-tls?ref=nix";
+  };
 
   outputs = { self, nix, nixpkgs, flake-utils }: 
      flake-utils.lib.eachDefaultSystem (system:
