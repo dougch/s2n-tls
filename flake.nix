@@ -8,7 +8,7 @@
       let pkgs = nixpkgs.legacyPackages.${system};
       in rec {
         packages.s2n-tls = pkgs.stdenv.mkDerivation {
-          src = self;
+src = self;
           name = "s2n-tls";
           inherit system;
 
@@ -19,7 +19,7 @@
             "-DBUILD_SHARED_LIBS=ON"
             "-DCMAKE_BUILD_TYPE=RelWithDebInfo"
             "-DS2N_NO_PQ=1" # TODO: set when system like aarch64/mips,etc
-          ];
+];
 
           propagatedBuildInputs = [ pkgs.openssl ];
 
@@ -29,12 +29,12 @@
           (finalAttrs: previousAttrs: { doCheck = true; });
         packages.s2n-tls-openssl11 = packages.s2n-tls.overrideAttrs
           (finalAttrs: previousAttrs: {
-            doCheck = true;
+doCheck = true;
             buildInputs = [ pkgs.openssl_1_1 ];
           });
         packages.s2n-tls-libressl = packages.s2n-tls.overrideAttrs
           (finalAttrs: previousAttrs: {
-            doCheck = true;
+doCheck = true;
             buildInputs = [ pkgs.libressl ];
           });
         formatter = pkgs.nixfmt;
