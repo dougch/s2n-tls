@@ -24,15 +24,15 @@
           propagatedBuildInputs = [ pkgs.openssl ];
 
         };
-        packages.default = packages.s2n-tls;
-        packages.s2n-tls-openssl3 = packages.s2n-tls.overrideAttrs
+packages.default = packages.s2n-tls;
+packages.s2n-tls-openssl3 = packages.s2n-tls.overrideAttrs
           (finalAttrs: previousAttrs: { doCheck = true; });
-        packages.s2n-tls-openssl11 = packages.s2n-tls.overrideAttrs
+packages.s2n-tls-openssl11 = packages.s2n-tls.overrideAttrs
           (finalAttrs: previousAttrs: {
             doCheck = true;
             buildInputs = [ pkgs.openssl_1_1 ];
           });
-        packages.s2n-tls-libressl = packages.s2n-tls.overrideAttrs
+packages.s2n-tls-libressl = packages.s2n-tls.overrideAttrs
           (finalAttrs: previousAttrs: {
             doCheck = true;
             buildInputs = [ pkgs.libressl ];
