@@ -38,5 +38,3 @@
             buildInputs = [ pkgs.libressl ];
           });
         formatter = pkgs.nixfmt;
-      });
-}
