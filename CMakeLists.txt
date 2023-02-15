@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.0)
+cmake_minimum_required (VERSION 3.10)
 project (s2n C)
 
 if(POLICY CMP0077)
@@ -41,6 +41,10 @@ option(EXPERIMENTAL_TREAT_WARNINGS_AS_ERRORS "Additional compiler warnings are t
 indicate danger points where you should verify with the S2N-TLS developers that the security of
 the library is not compromised. These warnings are currently failing for some builds; once the problems are fixed,
 they will be moved to UNSAFE_TREAT_WARNINGS_AS_ERRORS." OFF)
+
+if(CMAKE_MAJOR_VERSION GREATER_EQUAL "3" AND CMAKE_MINOR_VERSION GREATER_EQUAL "21")
+    set(CMAKE_CTEST_ARGUMENTS "--output-junit";"report_junit.xml")
+endif()
 
 # Turn BUILD_TESTING=ON by default
 include(CTest)
