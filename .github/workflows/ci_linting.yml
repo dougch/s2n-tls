@@ -91,3 +91,25 @@ jobs:
         with:
           clang-format-version: '15'
           include-regex: '^(\.\/)?(api|bin|crypto|stuffer|error|tls|utils|tests\/unit|tests\/testlib).*\.(c|h)$'
+  nixflake:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: nixbuild/nix-quick-install-action@v21
+        with:
+          nix_conf: experimental-features = nix-command flakes
+      - name: nix flake check
+        run: nix flake check
+  nixfmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: nixbuild/nix-quick-install-action@v21
+        with:
+          nix_conf: experimental-features = nix-command flakes
+      - name: nix fmt
+        run: |
+          echo "Checking nix files with: nix fmt ..."
+          nix fmt $(find . -name \*nix -type f -not -path "./.git/*")
+          git diff --name-status|| echo "All nix files passed the format check."
+          git diff --quiet
