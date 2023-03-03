@@ -99,8 +99,18 @@ jobs:
       - uses: camshaft/rust-cache@v1
 
       # Enforce that clippy's msrv matches rust-toolchain
-      - name: Check MSRV
+      - name: Check MSRV for clippy
         run: grep $(cat ${{env.ROOT_PATH}}/rust-toolchain) ${{env.ROOT_PATH}}/.clippy.toml
+
+      # Enforce crate msrv matches rust-toolchain
+      - name: Check MSRV of s2n-tls
+        run: grep "rust-version = \"$(cat ${{env.ROOT_PATH}}/rust-toolchain)\"" ${{env.ROOT_PATH}}/s2n-tls/Cargo.toml
+
+      - name: Check MSRV of s2n-tls-sys
+        run: grep "rust-version = \"$(cat ${{env.ROOT_PATH}}/rust-toolchain)\"" ${{env.ROOT_PATH}}/s2n-tls-sys/Cargo.toml
+
+      - name: Check MSRV of s2n-tokio
+        run: grep "rust-version = \"$(cat ${{env.ROOT_PATH}}/rust-toolchain)\"" ${{env.ROOT_PATH}}/s2n-tokio/Cargo.toml
 
       # We don't need to format the generated files,
       # but if they don't exist other code breaks.
