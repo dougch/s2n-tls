@@ -22,6 +22,7 @@ if [ "$(uname)" = 'FreeBSD' ]; then
 else
     export CTEST_PARALLEL_LEVEL=$(sysctl -n hw.ncpuonline)
 fi
+echo "Using a core count of $CTEST_PARALLEL_LEVEL"
 
 errors=0
 onerror() {
@@ -32,7 +33,7 @@ mkdir -p output
 
 cmake . -Brelease -GNinja -DCMAKE_BUILD_TYPE=Release
 cmake --build ./release -j $CTEST_PARALLEL_LEVEL
-ninja -C release test || onerror
+CTEST_PARALLEL_LEVEL=$CTEST_PARALLEL_LEVEL ninja -C release test || onerror
 mv release/Testing/Temporary output/release
 # reduce the number of files to copy back
 rm -rf release
@@ -43,5 +44,7 @@ ninja -C build test || onerror
 mv build/Testing/Temporary output/debug
 # reduce the number of files to copy back
 rm -rf build
+echo "Number of files synced back:"
+ls -al build|wc -l
 
 exit $errors
