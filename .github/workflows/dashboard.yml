@@ -3,10 +3,13 @@ name: Build Dashboard
 on:
   schedule:
     - cron: '0 0 * * 1-5'
+  push:
+    branches:
+      - main
 jobs:
   build:
     # This should only run in one place.
-    if: contains(github.repository, 'aws/s2n-tls')
+    if: contains(github.repository, 'dougch/s2n-tls')
     runs-on: ubuntu-latest
     permissions:
       contents: write
