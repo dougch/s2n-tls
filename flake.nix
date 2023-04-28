@@ -15,7 +15,7 @@
         openssl_1_1_1 = import ./nix/openssl_1_1_1.nix { pkgs = pkgs; };
         openssl_3_0 = import ./nix/openssl_3_0.nix { pkgs = pkgs; };
         libressl = import ./nix/libressl.nix { pkgs = pkgs; };
-        corretto-8 = import nix/amazon-corretto-8.nix { pkgs = pkgs; };
+        corretto-8 = import nix/amazon-corretto-8.${system}.nix { pkgs = pkgs; };
         gnutls-3-7 = import nix/gnutls.nix { pkgs = pkgs; };
         writeScript = path:
           pkgs.writeScript (baseNameOf path) (builtins.readFile path);
@@ -93,7 +93,7 @@
             # Linters/Formatters
             pkgs.shellcheck
             pkgs.nixfmt
-            pkgs.python39Packages.pep8
+            pkgs.python310Packages.pep8
 
             # Rust
             pkgs.rustup
