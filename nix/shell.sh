@@ -34,9 +34,9 @@ function build {
 
 function unit {
     if [[ -z "$1" ]]; then
-        (cd $SRC_ROOT/build; ctest -L unit -j $(nproc) --verbose)
+        (cd $SRC_ROOT/build; ctest -L unit -j $(nproc) --output-junit junit_all.xml --verbose)
     else
-        (cd $SRC_ROOT/build; ctest -L unit -R $1 -j $(nproc) --verbose)
+        (cd $SRC_ROOT/build; ctest -L unit -R $1 -j $(nproc) --force-new-ctest-process --output-junit junit_$(date +%s_%5N).xml --verbose)
     fi
 }
 
