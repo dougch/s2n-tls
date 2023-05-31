@@ -17,22 +17,23 @@
 # without linking to the library. This enables us to test behavior when 
 # s2n-tls is dynamically loaded.
 WORK_DIR=$1
-
-source codebuild/bin/s2n_setup_env.sh
-source codebuild/bin/jobs.sh
+if [ ! -z "$NIX_STORE" ]; then
+  OPENSSL=$(which openssl)
+  LIBCRYPTO_ROOT=$(nix-store --query $OPENSSL)
+else
+  source codebuild/bin/s2n_setup_env.sh
+fi
 
 S2N_BUILD_ARGS=(-H. -DCMAKE_PREFIX_PATH=$LIBCRYPTO_ROOT -DBUILD_TESTING=OFF)
 
 # create installation dir with libs2n.so
 if [ ! -d $WORK_DIR/s2n-install-shared ]; then
     (set -x; cmake -B$WORK_DIR/s2n-build-shared -DCMAKE_INSTALL_PREFIX=$WORK_DIR/s2n-install-shared -DBUILD_SHARED_LIBS=ON ${S2N_BUILD_ARGS[@]})
-    (set -x; cmake --build $WORK_DIR/s2n-build-shared --target install -- -j $JOBS)
+    (set -x; cmake --build $WORK_DIR/s2n-build-shared --target install -- -j $(nproc))
 fi
 
-OPENSSL=/nix/store/jcvzlk43wqih1va6mp23yp411jybpkjl-openssl-1.1.1/lib
 # Compile the dynamic load test without linking to libs2n.so
-$CC -Wl,-rpath $OPENSSL -o s2n_dynamic_load_test codebuild/bin/s2n_dynamic_load_test.c -ldl -lpthread -L$WORK_DIR/s2n-install-shared/lib
-#$CC -Wl,-rpath $OPENSSL -o s2n_dynamic_load_test codebuild/bin/s2n_dynamic_load_test.c -ldl -lpthread -ls2n -v
+$CC -Wl,-rpath $LIBCRYPTO_ROOT -o s2n_dynamic_load_test codebuild/bin/s2n_dynamic_load_test.c -ldl -lpthread -L$WORK_DIR/s2n-install-shared/lib  -v
 
 LDD_OUTPUT=$(ldd s2n_dynamic_load_test)
 
@@ -44,7 +45,7 @@ fi
 
 # Run the test with the path to libs2n
 echo "Running s2n_dynamic_load_test"
-LD_LIBRARY_PATH=$OPENSSL ./s2n_dynamic_load_test $WORK_DIR/s2n-install-shared/lib/libs2n.so
+LD_LIBRARY_PATH=$LIBCRYPTO_ROOT/lib ./s2n_dynamic_load_test $WORK_DIR/s2n-install-shared/lib/libs2n.so
 returncode=$?
 if [ $returncode -ne 0 ]; then
     echo "test failure: s2n_dynamic_load_test did not succeed"
