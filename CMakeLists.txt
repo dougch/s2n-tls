@@ -478,6 +478,15 @@ if (BUILD_TESTING)
     file(GLOB TESTLIB_SRC "tests/testlib/*.c")
     file(GLOB TESTLIB_HEADERS "tests/testlib/*.h" "tests/s2n_test.h")
 
+    # Let Cmake figure out core count.
+    include(ProcessorCount)
+    ProcessorCount(NPROC)
+    if(NOT NPROC EQUAL 0)
+      message(STATUS "Detecting ${NPROC} cores")
+      set(CTEST_BUILD_FLAGS -j${NPROC})
+      set(CTEST_PARALLEL_LEVEL=${NPROC})
+    endif()
+
     add_library(testss2n STATIC ${TESTLIB_HEADERS} ${TESTLIB_SRC})
     target_include_directories(testss2n PUBLIC tests)
     target_compile_options(testss2n PRIVATE -std=gnu99)
@@ -585,7 +594,7 @@ if (BUILD_TESTING)
                 add_test(NAME ${test_target}
                         COMMAND
                         pytest
-                        -x -n=1 --maxfail=1 --reruns=0 --cache-clear -rpfsq
+                        -x -n=${NPROC} --maxfail=1 --reruns=0 --cache-clear -rpfsq
                         -o log_cli=true --log-cli-level=DEBUG --provider-version=$ENV{S2N_LIBCRYPTO}
                         --provider-criterion=off --fips-mode=0 --no-pq=0 ${test_file_path}
                         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/tests/integrationv2
