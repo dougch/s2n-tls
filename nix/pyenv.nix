@@ -3,7 +3,7 @@ let
   pythonPkgs = pkgs.python310Packages;
   cryptography = pythonPkgs.cryptography;
   pyOpenSSL = pythonPkgs.pyopenssl;
-  nassl = with pythonPkgs;
+/*  nassl = with pythonPkgs;
     buildPythonPackage rec {
       pname = "nassl";
       version = "5.0.0";
@@ -33,15 +33,16 @@ let
         pydantic # >=1.7,<1.9 TODO: check if this version is correct/if it matters
       ];
     };
+    */
 in pkgs.python310.withPackages (ps: [
   ps.pep8
   ps.pytest # ==5.3.5 TODO: check if this version is correct/if it matters
   ps.pytest-xdist # ==1.34.0 TODO: check if this version is correct/if it matters
-  sslyze # ==5.0.2 TODO: check if this version is correct/if it matters
+  #sslyze # ==5.0.2 TODO: check if this version is correct/if it matters
   ps.pytest-rerunfailures
   ps.tox
   ps.typing-extensions
   ps.setuptools-rust
   ps.cryptography
-  nassl
+  #nassl
 ])
