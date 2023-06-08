@@ -1,6 +1,7 @@
 import pytest
 import sslyze
 import abc
+import platform
 from enum import Enum, auto
 
 from configuration import available_ports, ALL_TEST_CERTS
@@ -238,6 +239,8 @@ def invalid_sslyze_scan_parameters(*args, **kwargs):
 @pytest.mark.parametrize("scan_command", SSLYZE_SCANS_TO_TEST, ids=get_parameter_name)
 @pytest.mark.parametrize("provider", [S2N], ids=get_parameter_name)
 def test_sslyze_scans(managed_process, protocol, scan_command, provider):
+    if ('x86_64' not in platform.machine()):
+        pytest.skip()
     port = next(available_ports)
 
     server_options = ProviderOptions(
@@ -328,6 +331,8 @@ def invalid_certificate_scans_parameters(*args, **kwargs):
     CertificateScan.ELLIPTIC_CURVE_SCAN
 ], ids=lambda certificate_scan: certificate_scan.name)
 def test_sslyze_certificate_scans(managed_process, protocol, certificate, provider, certificate_scan):
+    if ('x86_64' not in platform.machine()):
+        pytest.skip()
     port = next(available_ports)
 
     server_options = ProviderOptions(
