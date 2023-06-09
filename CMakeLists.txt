@@ -582,6 +582,13 @@ if (BUILD_TESTING)
                 # For Nix and environments where LD_LIBRARY_PATH is already correct.
                 # We're also dropping tox and calling pytest directly, because
                 # Nix is already handling all of the python setup.
+                if (NOT CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" AND ${test_target} STREQUAL "integrationv2_sslyze" )
+                  # Skip sslyze/nassl on non-x86; it has not been built for arm
+                  # and pytest.importskip() is still failing the test.
+                  message(WARNING "Not adding integ test ${test_target} on ${CMAKE_SYSTEM_PROCESSOR}")
+                  continue()
+                endif()
+                message(STATUS "Adding integ test ${test_target}")
                 add_test(NAME ${test_target}
                         COMMAND
                         pytest

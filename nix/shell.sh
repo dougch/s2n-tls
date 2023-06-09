@@ -51,13 +51,15 @@ function integ {
         echo "- renegotiate_apache"
         echo "   This test requires apache to be running. See codebuild/bin/s2n_apache.sh"
         echo "    for more info."
+        echo "- sslyze (on aarch64)"
+        echo "   Test tooling isn't available for arm"
         return
     fi
     if [[ -z "$1" ]]; then
-        banner "Running all integ tests except cross_compatibility, renegotiate_apache."
+        banner "Running all integ tests except cross_compatibility, renegotiate_apache, and sslyze on arm."
         (cd $SRC_ROOT/build; ctest -L integrationv2 -E "(integrationv2_cross_compatibility|integrationv2_renegotiate_apache)" --verbose)
     else
-        banner "Warning: cross_compatibility & renegotiate_apache are not supported in nix for various reasons integ help for more info."
+        banner "Warning: cross_compatibility & renegotiate_apache, and sslyze on arm are not supported in nix for various reasons integ help for more info."
         (cd $SRC_ROOT/build; ctest -L integrationv2 -R "$1" --verbose)
     fi
 }
@@ -111,7 +113,7 @@ function do-clang-format {
 
 function test_toolchain_counts {
     # This is a starting point for a unit test of the devShell.
-    # The choosen S2N_LIBCRYPTO should be 2, and the others should be zero.
+    # The chosen S2N_LIBCRYPTO should be 2, and the others should be zero.
     banner "Checking the CMAKE_INCLUDE_PATH for libcrypto counts"
     echo $CMAKE_INCLUDE_PATH|gawk 'BEGIN{RS=":"; o10=0; o11=0; o3=0;awslc=0;libre=0}
       /openssl-3.0/{o3++}
