@@ -1,5 +1,5 @@
 import pytest
-import sslyze
+import platform
 import abc
 import platform
 from enum import Enum, auto
@@ -242,6 +242,7 @@ def test_sslyze_scans(managed_process, protocol, scan_command, provider):
     if ('x86_64' not in platform.machine()):
         pytest.skip()
     port = next(available_ports)
+    # MOVE the SSLYZE constants here
 
     server_options = ProviderOptions(
         mode=S2N.ServerMode,
@@ -333,6 +334,10 @@ def invalid_certificate_scans_parameters(*args, **kwargs):
 def test_sslyze_certificate_scans(managed_process, protocol, certificate, provider, certificate_scan):
     if ('x86_64' not in platform.machine()):
         pytest.skip()
+    try:
+        import sslyze
+    except:
+        pass
     port = next(available_ports)
 
     server_options = ProviderOptions(

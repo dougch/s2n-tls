@@ -126,9 +126,15 @@ function test_toolchain_counts {
     echo -e "gnutls-cli:\t $(gnutls-cli --version |grep -c 'gnutls-cli 3.7')"
     echo -e "gnutls-serv:\t $(gnutls-serv --version |grep -c 'gnutls-serv 3.7')"
     echo -e "Nix Python:\t $(which python|grep -c '/nix/store')"
-    echo -e "Nix pytest:\t $(which pytest|grep -c '/nix/store')"
-    echo -e "Nix sslyze:\t $(which sslyze|grep -c '/nix/store')"
-    echo -e "python nassl:\t $(pip freeze|grep -c 'nassl')"
+    echo -e "Nix pytest:\t $(which pytest 2>/dev/null|grep -c '/nix/store')"
+    echo -e "sslyze:\t $(which sslyze 2>/dev/null|grep -c '/nix/store')"
+    nassl_count=$(python -c """
+try:
+    from nassl import _nassl
+    print("1")
+except:
+    print("0")""")
+    echo -e "python nassl:\t $nassl_count"
 }
 
 function test_nonstandard_compilation {
