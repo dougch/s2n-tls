@@ -26,11 +26,17 @@ A devShell is an environment with all of the build dependencies installed (on PA
 
 To enter the development shell, run `nix develop` at the root of the project.
 
-There are some helper scripts in the environment to make building easier, but if you're familiar with Nix, note that these are 
-separate from the buildPhase, configurePhase and checkPhase.
+To enter a development environment with a libcrypto other than the default (currently OpenSSL 3.0 in flake.nix), specify using the syntax:
+`.#libcrypto`. The current choices, in addition to `default`, are: `awslc`, `openssl111`, `openssl102`, and `libressl`.
+
 ### Configure and build
 
-From inside the devShell: `configure; build`.
+There are some helper scripts in the environment to make building easier, but if you're familiar with Nix, note that these are 
+separate from the buildPhase, configurePhase and checkPhase.
+
+Both the `configure` and `build` helper function accept additional cmake flags, e.g. `configure -DS2N_NO_PQ=true`.
+
+To just build with the defaults inside of the devShell run: `configure; build`.
 
 The first time this is run, it might take a while to build everything.
 
@@ -46,6 +52,7 @@ What is this doing?
 1. max-jobs tells nix to use all the cores available to build
 2. ignore-environment strips out environment variables to get a clean environment
 3. source the shell functions needed to configure, build and run tests
+
 ### Integration tests
 
 From inside a devShell after running configure and build, use `integ <test name>` to run the integ tests matching the regex `<test name>`, or with no arguments to run all the integ tests.  Note that some of the tests are still broken under nix, so some failures are expected.

@@ -23,13 +23,13 @@ function configure {
           -DS2N_INSTALL_S2NC_S2ND=ON \
           -DS2N_INTEG_NIX=ON \
           -DBUILD_SHARED_LIBS=ON \
-          -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo $@
 }
 
 function build {
     banner "Running Build"
     javac tests/integrationv2/bin/SSLSocketClient.java
-    cmake --build ./build -j $(nproc)
+    cmake --build ./build -j $(nproc) $@
 }
 
 function unit {
