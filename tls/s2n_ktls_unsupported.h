@@ -20,7 +20,11 @@
  */
 
 /* socket definitions */
-#define S2N_SOL_TLS 0
+#define S2N_TLS_ULP_NAME      "tls"
+#define S2N_TLS_ULP_NAME_SIZE sizeof(S2N_TLS_ULP_NAME)
+#define S2N_TCP_ULP           0
+#define S2N_SOL_TCP           0
+#define S2N_SOL_TLS           0
 
 /* cmsg */
 #define S2N_TLS_SET_RECORD_TYPE 0

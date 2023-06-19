@@ -25,7 +25,11 @@
  */
 
 /* socket definitions */
-#define S2N_SOL_TLS 282
+#define S2N_TLS_ULP_NAME      "tls"
+#define S2N_TLS_ULP_NAME_SIZE sizeof(S2N_TLS_ULP_NAME)
+#define S2N_TCP_ULP           31 /* Attach a ULP to a TCP connection.  */
+#define S2N_SOL_TCP           6  /* TCP level */
+#define S2N_SOL_TLS           282
 
 /* cmsg */
 #define S2N_TLS_SET_RECORD_TYPE 1

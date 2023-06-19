@@ -332,3 +332,46 @@ S2N_RESULT s2n_set_all_mutually_supported_groups(struct s2n_connection *conn)
 
     return S2N_RESULT_OK;
 }
+
+S2N_RESULT s2n_skip_handshake(struct s2n_connection *conn)
+{
+    conn->handshake.handshake_type = NEGOTIATED | FULL_HANDSHAKE;
+    while (!s2n_handshake_is_complete(conn)) {
+        conn->handshake.message_number++;
+    }
+    return S2N_RESULT_OK;
+}
+
+/* set kTLS supported cipher */
+struct s2n_cipher ktls_temp_supported_cipher = {
+    .ktls_supported = true,
+};
+struct s2n_record_algorithm ktls_temp_supported_record_alg = {
+    .cipher = &ktls_temp_supported_cipher,
+};
+struct s2n_cipher_suite ktls_temp_supported_cipher_suite = {
+    .record_alg = &ktls_temp_supported_record_alg,
+};
+
+S2N_RESULT s2n_test_configure_ktls_connection(struct s2n_connection *conn, int *out_fd, bool complete_handshake)
+{
+    RESULT_ENSURE_REF(conn);
+
+    /* config I/O */
+    *out_fd = 1;
+    RESULT_GUARD_POSIX(s2n_connection_set_write_fd(conn, *out_fd));
+    RESULT_GUARD_POSIX(s2n_connection_set_read_fd(conn, *out_fd));
+    conn->managed_send_io = true;
+    conn->managed_recv_io = true;
+    conn->ktls_send_enabled = false;
+    conn->ktls_recv_enabled = false;
+
+    /* configure connection so that the handshake is complete */
+    conn->secure->cipher_suite = &ktls_temp_supported_cipher_suite;
+    conn->actual_protocol_version = S2N_TLS12;
+    if (complete_handshake) {
+        RESULT_GUARD(s2n_skip_handshake(conn));
+    }
+
+    return S2N_RESULT_OK;
+}
