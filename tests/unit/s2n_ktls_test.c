@@ -21,6 +21,17 @@
 S2N_RESULT s2n_ktls_retrieve_file_descriptor(struct s2n_connection *conn, s2n_ktls_mode ktls_mode, int *fd);
 S2N_RESULT s2n_disable_ktls_socket_config_for_testing(void);
 
+/* set kTLS un-supported cipher */
+struct s2n_cipher temp_unsupported_cipher = {
+    .ktls_supported = false,
+};
+struct s2n_record_algorithm temp_unsupported_record_alg = {
+    .cipher = &temp_unsupported_cipher,
+};
+struct s2n_cipher_suite temp_unsupported_cipher_suite = {
+    .record_alg = &temp_unsupported_record_alg,
+};
+
 int main(int argc, char **argv)
 {
     BEGIN_TEST();

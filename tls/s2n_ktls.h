@@ -15,7 +15,9 @@
 
 #pragma once
 
-#include "tls/s2n_config.h"
+#include "utils/s2n_result.h"
+
+struct s2n_key_material;
 
 /* Define headers needed to enable and use kTLS.
  *
