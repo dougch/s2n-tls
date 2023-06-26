@@ -13,13 +13,15 @@
  * permissions and limitations under the License.
  */
 
-#include "tls/s2n_ktls.h"
+#pragma once
 
-bool s2n_ktls_is_supported_on_platform()
-{
-#if S2N_KTLS_SUPPORTED
-    return true;
-#else
-    return false;
-#endif
-}
+/*
+ * For unsupported platforms 0-init all values.
+ */
+
+/* socket definitions */
+#define S2N_SOL_TLS 0
+
+/* cmsg */
+#define S2N_TLS_SET_RECORD_TYPE 0
+#define S2N_TLS_GET_RECORD_TYPE 0

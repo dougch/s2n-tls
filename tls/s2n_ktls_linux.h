@@ -13,13 +13,20 @@
  * permissions and limitations under the License.
  */
 
-#include "tls/s2n_ktls.h"
+#pragma once
 
-bool s2n_ktls_is_supported_on_platform()
-{
-#if S2N_KTLS_SUPPORTED
-    return true;
-#else
-    return false;
-#endif
-}
+/*
+ * Linux doesn't expose kTLS headers in its uapi. Its possible to get these headers
+ * via glibc but support can vary depending on the version of glibc on the host.
+ * Instead we define linux specific values inline.
+ *
+ * - https://elixir.bootlin.com/linux/v6.3.8/A/ident/TCP_ULP
+ * - https://elixir.bootlin.com/linux/v6.3.8/A/ident/SOL_TCP
+ */
+
+/* socket definitions */
+#define S2N_SOL_TLS 282
+
+/* cmsg */
+#define S2N_TLS_SET_RECORD_TYPE 1
+#define S2N_TLS_GET_RECORD_TYPE 2
