@@ -25,8 +25,7 @@
 #include "tls/s2n_ktls_parameters.h"
 
 /* A set of kTLS configurations representing the combination of sending
- * and receiving.
- */
+ * and receiving. */
 typedef enum {
     /* Enable kTLS for the send socket. */
     S2N_KTLS_MODE_SEND,

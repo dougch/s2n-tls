@@ -34,6 +34,10 @@
     #define S2N_TLS_TX  1 /* Set transmit parameters */
     #define S2N_TLS_RX  2 /* Set receive parameters */
 
+    /* cmsg */
+    #define S2N_TLS_SET_RECORD_TYPE 1
+    #define S2N_TLS_GET_RECORD_TYPE 2
+
     /* cipher definitions */
     #define S2N_TLS_CIPHER_AES_GCM_128              51
     #define S2N_TLS_CIPHER_AES_GCM_128_IV_SIZE      8
@@ -52,6 +56,10 @@
     #define S2N_SOL_TLS                             0
     #define S2N_TLS_TX                              0
     #define S2N_TLS_RX                              0
+
+    /* cmsg */
+    #define S2N_TLS_SET_RECORD_TYPE                 0
+    #define S2N_TLS_GET_RECORD_TYPE                 0
 
     /* cipher definitions */
     #define S2N_TLS_CIPHER_AES_GCM_128              0
