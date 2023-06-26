@@ -244,3 +244,10 @@ extern const s2n_parsed_extension EMPTY_PARSED_EXTENSIONS[S2N_PARSED_EXTENSIONS_
 int s2n_kem_recv_public_key_fuzz_test(const uint8_t *buf, size_t len, struct s2n_kem_params *kem_params);
 int s2n_kem_recv_ciphertext_fuzz_test(const uint8_t *buf, size_t len, struct s2n_kem_params *kem_params);
 int s2n_kem_recv_ciphertext_fuzz_test_init(const char *kat_file_path, struct s2n_kem_params *kem_params);
+
+/* A collection of callbacks run during inet socket self talk tests */
+struct self_talk_inet_socket_callbacks {
+    S2N_RESULT (*s_post_handshake_cb)(struct s2n_connection *conn);
+    S2N_RESULT (*c_post_handshake_cb)(struct s2n_connection *conn);
+};
+extern const struct self_talk_inet_socket_callbacks noop_inet_cb;
