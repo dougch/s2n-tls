@@ -31,6 +31,7 @@
 #include "tls/s2n_handshake.h"
 #include "tls/s2n_kem_preferences.h"
 #include "tls/s2n_key_update.h"
+#include "tls/s2n_ktls.h"
 #include "tls/s2n_post_handshake.h"
 #include "tls/s2n_prf.h"
 #include "tls/s2n_quic_support.h"

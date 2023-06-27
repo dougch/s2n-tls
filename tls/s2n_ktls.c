@@ -17,8 +17,13 @@
 
 #include <sys/socket.h>
 
+#include "error/s2n_errno.h"
+#include "s2n.h"
 #include "tls/s2n_prf.h"
 #include "utils/s2n_socket.h"
+
+/* These variables are used to disable ktls mechanisms during testing. */
+static bool ktls_disable_socket_io_for_testing = false;
 
 bool s2n_ktls_is_supported_on_platform()
 {
@@ -69,6 +74,8 @@ static S2N_RESULT s2n_ktls_validate(struct s2n_connection *conn, s2n_ktls_mode k
             RESULT_BAIL(S2N_ERR_SAFETY);
             break;
     }
+
+    RESULT_ENSURE(!conn->config->renegotiate_request_cb, S2N_ERR_KTLS_RENEGOTIATION);
 
     return S2N_RESULT_OK;
 }
@@ -158,7 +165,8 @@ static S2N_RESULT s2n_ktls_set_keys(struct s2n_connection *conn, s2n_ktls_mode k
     RESULT_GUARD(s2n_ktls_init_aes128_gcm_crypto_info(conn, ktls_mode, key_material, &crypto_info, &tls_tx_rx_mode));
 
     /* Calls to setsockopt require a real socket, which is not used in unit tests. */
-    if (s2n_in_unit_test()) {
+    if (ktls_disable_socket_io_for_testing) {
+        RESULT_ENSURE(s2n_in_unit_test(), S2N_ERR_NOT_IN_UNIT_TEST);
         return S2N_RESULT_OK;
     }
 
@@ -181,7 +189,8 @@ static S2N_RESULT s2n_ktls_configure_socket(struct s2n_connection *conn, s2n_ktl
     RESULT_GUARD(s2n_ktls_retrieve_file_descriptor(conn, ktls_mode, &fd));
 
     /* Calls to setsockopt require a real socket, which is not used in unit tests. */
-    if (s2n_in_unit_test()) {
+    if (ktls_disable_socket_io_for_testing) {
+        RESULT_ENSURE(s2n_in_unit_test(), S2N_ERR_NOT_IN_UNIT_TEST);
         return S2N_RESULT_OK;
     }
 
@@ -266,4 +275,27 @@ int s2n_connection_ktls_enable_recv(struct s2n_connection *conn)
     conn->recv = NULL;
 
     return S2N_SUCCESS;
+}
+
+bool s2n_connection_is_ktls_enabled(struct s2n_connection *conn, s2n_ktls_mode ktls_mode)
+{
+    switch (ktls_mode) {
+        case S2N_KTLS_MODE_RECV:
+            return conn->ktls_recv_enabled;
+            break;
+        case S2N_KTLS_MODE_SEND:
+            return conn->ktls_send_enabled;
+            break;
+    }
+    return false;
+}
+
+/* Use for testing only. */
+S2N_RESULT s2n_ktls_disable_socket_io_for_testing(void)
+{
+    RESULT_ENSURE(s2n_in_unit_test(), S2N_ERR_NOT_IN_UNIT_TEST);
+
+    ktls_disable_socket_io_for_testing = true;
+
+    return S2N_RESULT_OK;
 }

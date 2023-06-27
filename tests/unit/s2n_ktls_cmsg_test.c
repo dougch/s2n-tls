@@ -15,18 +15,18 @@
 
 #include <sys/socket.h>
 
+#include "error/s2n_errno.h"
 #include "s2n_test.h"
 #include "testlib/s2n_testlib.h"
 #include "tls/s2n_ktls.h"
 
-S2N_RESULT s2n_ktls_send_msg_impl(int sock, struct msghdr *msg,
-        const struct iovec *msg_iov, s2n_blocked_status *blocked, ssize_t *result);
-S2N_RESULT s2n_ktls_recv_msg_impl(int sock, struct msghdr *msg,
-        struct iovec *msg_iov, s2n_blocked_status *blocked, ssize_t *result);
-S2N_RESULT s2n_ktls_send_control_msg(int sock, struct msghdr *msg,
-        uint8_t record_type, s2n_blocked_status *blocked, ssize_t *result);
-S2N_RESULT s2n_ktls_recv_control_msg(int sock, struct msghdr *msg,
-        uint8_t *record_type, s2n_blocked_status *blocked, ssize_t *result);
+S2N_RESULT s2n_ktls_send_msg_impl(struct s2n_connection *conn, int sock, struct msghdr *msg,
+        struct iovec *msg_iov, size_t count, s2n_blocked_status *blocked,
+        ssize_t *send_len);
+S2N_RESULT s2n_ktls_recv_msg_impl(struct s2n_connection *conn, int sock, struct msghdr *msg,
+        struct iovec *msg_iov, s2n_blocked_status *blocked, ssize_t *bytes_read);
+S2N_RESULT s2n_ktls_send_control_msg(struct msghdr *msg, uint8_t record_type);
+S2N_RESULT s2n_ktls_recv_control_msg(struct msghdr *msg, uint8_t *record_type);
 
 #define TEST_MAX_DATA_LEN 20000
 
@@ -45,6 +45,9 @@ int main(int argc, char **argv)
     BEGIN_TEST();
 
 #if S2N_KTLS_SUPPORTED
+    DEFER_CLEANUP(struct s2n_connection *conn = s2n_connection_new(S2N_SERVER),
+            s2n_connection_ptr_free);
+
     uint8_t test_data[TEST_MAX_DATA_LEN] = { 0 };
     struct s2n_blob test_data_blob = { 0 };
     EXPECT_SUCCESS(s2n_blob_init(&test_data_blob, test_data, sizeof(test_data)));
@@ -53,38 +56,37 @@ int main(int argc, char **argv)
     struct msghdr msg = { 0 };
     struct iovec msg_iov = { 0 };
 
-    /* ctrl_msg send and recv data */
+    /* fuzz ctrl_msg send and recv data */
     for (size_t to_send = 1; to_send < TEST_MAX_DATA_LEN; to_send += 500) {
         /* Create a pipe */
         struct s2n_test_io_pair io_pair;
         EXPECT_SUCCESS(s2n_io_pair_init_non_blocking(&io_pair));
         s2n_blocked_status blocked = S2N_NOT_BLOCKED;
 
-        {
-            msg_iov.iov_base = (void *) (uintptr_t) test_data;
-            msg_iov.iov_len = to_send;
+        /* send */
+        msg_iov.iov_base = (void *) (uintptr_t) test_data;
+        msg_iov.iov_len = to_send;
+        ssize_t send_len = 0;
+        EXPECT_OK(s2n_ktls_send_msg_impl(conn, io_pair.client, &msg, &msg_iov, 1, &blocked, &send_len));
+        EXPECT_EQUAL(send_len, to_send);
 
-            ssize_t sent_len = 0;
-            EXPECT_OK(s2n_ktls_send_msg_impl(io_pair.client, &msg, &msg_iov, &blocked, &sent_len));
-            EXPECT_EQUAL(sent_len, to_send);
-        }
-
+        /* recv */
         uint8_t recv_buffer[TEST_MAX_DATA_LEN] = { 0 };
-        /* confirm test_data and recv_buffer dont match */
         EXPECT_NOT_EQUAL(memcmp(test_data, recv_buffer, to_send), 0);
-        {
-            msg_iov.iov_base = recv_buffer;
-            msg_iov.iov_len = to_send;
 
-            ssize_t recv_len = 0;
-            EXPECT_OK(s2n_ktls_recv_msg_impl(io_pair.server, &msg, &msg_iov, &blocked, &recv_len));
-            EXPECT_EQUAL(recv_len, to_send);
-            EXPECT_EQUAL(memcmp(test_data, recv_buffer, recv_len), 0);
-        }
+        msg_iov.iov_base = recv_buffer;
+        msg_iov.iov_len = to_send;
+        ssize_t recv_len = 0;
+        EXPECT_OK(s2n_ktls_recv_msg_impl(conn, io_pair.server, &msg, &msg_iov, &blocked, &recv_len));
+        EXPECT_EQUAL(recv_len, to_send);
+        EXPECT_EQUAL(memcmp(test_data, recv_buffer, recv_len), 0);
     }
 
     /* test blocked data and partial reads */
     {
+        DEFER_CLEANUP(struct s2n_connection *conn = s2n_connection_new(S2N_SERVER),
+                s2n_connection_ptr_free);
+
         /* Create a pipe */
         struct s2n_test_io_pair io_pair;
         EXPECT_SUCCESS(s2n_io_pair_init_non_blocking(&io_pair));
@@ -92,62 +94,51 @@ int main(int argc, char **argv)
 
         /* only read half the total data sent to simulate multiple reads */
         size_t to_send = 10;
-        size_t to_recv = 5;
-
+        size_t to_partial_recv = 4;
         uint8_t recv_buffer[TEST_MAX_DATA_LEN] = { 0 };
-        /* confirm test_data and recv_buffer dont match */
-        EXPECT_NOT_EQUAL(memcmp(test_data, recv_buffer, to_send), 0);
 
         /* calling recv when nothing has been sent blocks */
-        {
-            msg_iov.iov_base = recv_buffer;
-            msg_iov.iov_len = to_recv;
-
-            ssize_t recv_len = 0;
-            EXPECT_ERROR_WITH_ERRNO(s2n_ktls_recv_msg_impl(io_pair.server, &msg, &msg_iov, &blocked, &recv_len), S2N_ERR_IO_BLOCKED);
-            EXPECT_EQUAL(blocked, S2N_BLOCKED_ON_READ);
-        }
+        msg_iov.iov_base = recv_buffer;
+        msg_iov.iov_len = to_partial_recv;
+        ssize_t recv_len = 0;
+        EXPECT_ERROR_WITH_ERRNO(s2n_ktls_recv_msg_impl(conn, io_pair.server, &msg, &msg_iov, &blocked, &recv_len), S2N_ERR_IO_BLOCKED);
+        EXPECT_EQUAL(blocked, S2N_BLOCKED_ON_READ);
 
         /* send data */
-        {
-            msg_iov.iov_base = (void *) (uintptr_t) test_data;
-            msg_iov.iov_len = to_send;
+        msg_iov.iov_base = (void *) (uintptr_t) test_data;
+        msg_iov.iov_len = to_send;
+        ssize_t sent_len = 0;
+        EXPECT_OK(s2n_ktls_send_msg_impl(conn, io_pair.client, &msg, &msg_iov, 1, &blocked, &sent_len));
+        EXPECT_EQUAL(sent_len, to_send);
 
-            ssize_t sent_len = 0;
-            EXPECT_OK(s2n_ktls_send_msg_impl(io_pair.client, &msg, &msg_iov, &blocked, &sent_len));
-            EXPECT_EQUAL(sent_len, to_send);
-        }
+        /* read partial amount of the data sent */
+        msg_iov.iov_base = recv_buffer;
+        msg_iov.iov_len = to_partial_recv;
+        recv_len = 0;
+        EXPECT_OK(s2n_ktls_recv_msg_impl(conn, io_pair.server, &msg, &msg_iov, &blocked, &recv_len));
+        EXPECT_EQUAL(recv_len, to_partial_recv);
+        EXPECT_EQUAL(memcmp(test_data, recv_buffer, to_partial_recv), 0);
 
-        /* only read half the amount of data sent */
-        {
-            msg_iov.iov_base = recv_buffer;
-            msg_iov.iov_len = to_recv;
-
-            ssize_t recv_len = 0;
-            EXPECT_OK(s2n_ktls_recv_msg_impl(io_pair.server, &msg, &msg_iov, &blocked, &recv_len));
-            EXPECT_EQUAL(recv_len, to_recv);
-            EXPECT_EQUAL(memcmp(test_data, recv_buffer, to_recv), 0);
-        }
-
-        /* read the other half of data sent */
-        {
-            /* offset the read buffer by the amount already read */
-            msg_iov.iov_base = recv_buffer + to_recv;
-            msg_iov.iov_len = to_recv;
-
-            ssize_t recv_len = 0;
-            EXPECT_OK(s2n_ktls_recv_msg_impl(io_pair.server, &msg, &msg_iov, &blocked, &recv_len));
-            EXPECT_EQUAL(recv_len, to_recv);
-        }
+        /* read the remaining amount of data sent */
+        /* offset the read buffer by the amount already read */
+        msg_iov.iov_base = recv_buffer + to_partial_recv;
+        msg_iov.iov_len = to_send - to_partial_recv;
+        recv_len = 0;
+        EXPECT_OK(s2n_ktls_recv_msg_impl(conn, io_pair.server, &msg, &msg_iov, &blocked, &recv_len));
+        EXPECT_EQUAL(recv_len, to_send - to_partial_recv);
 
         /* confirm that all data was read and matches sent data of length `to_send` */
         EXPECT_EQUAL(memcmp(test_data, recv_buffer, to_send), 0);
+
+        /* close the peer and expect recv to return a closed error */
+        close(io_pair.client);
+        EXPECT_ERROR_WITH_ERRNO(s2n_ktls_recv_msg_impl(conn, io_pair.server, &msg, &msg_iov, &blocked, &recv_len), S2N_ERR_CLOSED);
+        EXPECT_TRUE(s2n_atomic_flag_test(&conn->read_closed));
     }
 
     /* create and parse ancillary data */
     {
         uint8_t send_record_type = 10;
-        int fd = 0;
         s2n_blocked_status blocked = S2N_NOT_BLOCKED;
         ssize_t result = 0;
         union {
@@ -164,7 +155,7 @@ int main(int argc, char **argv)
         s_msg.msg_controllen = sizeof(control_msg.buf);
 
         /* create the control_msg */
-        EXPECT_OK(s2n_ktls_send_control_msg(fd, &s_msg, send_record_type, &blocked, &result));
+        EXPECT_OK(s2n_ktls_send_control_msg(&s_msg, send_record_type));
 
         /* parse ancillary data */
         {
@@ -174,15 +165,15 @@ int main(int argc, char **argv)
 
             /* assert that we can parse the same record_type */
             uint8_t recv_record_type = 0;
-            EXPECT_OK(s2n_ktls_recv_control_msg(fd, &s_msg, &recv_record_type, &blocked, &result));
+            EXPECT_OK(s2n_ktls_recv_control_msg(&s_msg, &recv_record_type));
             EXPECT_EQUAL(recv_record_type, send_record_type);
 
-            /* record_type should default to TLS_APPLICATION_DATA */
+            /* error if header is not present */
             hdr->cmsg_type = 0;
             hdr->cmsg_level = 0;
             recv_record_type = 0;
-            EXPECT_OK(s2n_ktls_recv_control_msg(fd, &s_msg, &recv_record_type, &blocked, &result));
-            EXPECT_EQUAL(recv_record_type, TLS_APPLICATION_DATA);
+
+            EXPECT_ERROR_WITH_ERRNO(s2n_ktls_recv_control_msg(&s_msg, &recv_record_type), S2N_ERR_SAFETY);
         }
     }
 #endif

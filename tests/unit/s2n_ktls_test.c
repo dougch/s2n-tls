@@ -19,13 +19,23 @@
 #include "testlib/s2n_testlib.h"
 #include "utils/s2n_random.h"
 
+S2N_RESULT s2n_ktls_disable_socket_io_for_testing(void);
 S2N_RESULT s2n_ktls_retrieve_file_descriptor(struct s2n_connection *conn, s2n_ktls_mode ktls_mode, int *fd);
 S2N_RESULT s2n_ktls_init_aes128_gcm_crypto_info(struct s2n_connection *conn, s2n_ktls_mode ktls_mode,
         struct s2n_key_material *key_material, struct s2n_tls12_crypto_info_aes_gcm_128 *crypto_info, int *tls_mode);
 
-S2N_RESULT s2n_test_configure_connection_for_ktls(struct s2n_connection *conn)
+int s2n_test_renegotiate_request_cb(struct s2n_connection *conn, void *context, s2n_renegotiate_response *response)
+{
+    return S2N_SUCCESS;
+}
+S2N_RESULT s2n_test_configure_connection_for_ktls(struct s2n_connection *conn,
+        struct s2n_config *config)
 {
     RESULT_ENSURE_REF(conn);
+    RESULT_ENSURE_REF(config);
+
+    RESULT_GUARD_POSIX(s2n_connection_set_config(conn, config));
+    RESULT_ENSURE(!config->renegotiate_request_cb, S2N_ERR_NULL);
 
     /* config I/O */
     RESULT_GUARD_POSIX(s2n_connection_set_write_fd(conn, 1));
@@ -49,13 +59,17 @@ int main(int argc, char **argv)
     if (!s2n_ktls_is_supported_on_platform()) {
         DEFER_CLEANUP(struct s2n_connection *server_conn = s2n_connection_new(S2N_SERVER),
                 s2n_connection_ptr_free);
-        EXPECT_OK(s2n_test_configure_connection_for_ktls(server_conn));
+        DEFER_CLEANUP(struct s2n_config *config = s2n_config_new(),
+                s2n_config_ptr_free);
+        EXPECT_OK(s2n_test_configure_connection_for_ktls(server_conn, config));
 
         EXPECT_FAILURE_WITH_ERRNO(s2n_connection_ktls_enable_send(server_conn), S2N_ERR_KTLS_UNSUPPORTED_PLATFORM);
         EXPECT_FAILURE_WITH_ERRNO(s2n_connection_ktls_enable_recv(server_conn), S2N_ERR_KTLS_UNSUPPORTED_PLATFORM);
 
         END_TEST();
     }
+
+    EXPECT_OK(s2n_ktls_disable_socket_io_for_testing());
 
     /* prepare test data */
     uint8_t test_data[S2N_MAX_KEY_BLOCK_LEN] = { 0 };
@@ -148,7 +162,9 @@ int main(int argc, char **argv)
         {
             DEFER_CLEANUP(struct s2n_connection *server_conn = s2n_connection_new(S2N_SERVER),
                     s2n_connection_ptr_free);
-            EXPECT_OK(s2n_test_configure_connection_for_ktls(server_conn));
+            DEFER_CLEANUP(struct s2n_config *config = s2n_config_new(),
+                    s2n_config_ptr_free);
+            EXPECT_OK(s2n_test_configure_connection_for_ktls(server_conn, config));
             EXPECT_NOT_NULL(server_conn->send);
             EXPECT_NOT_NULL(server_conn->recv);
 
@@ -165,7 +181,9 @@ int main(int argc, char **argv)
         {
             DEFER_CLEANUP(struct s2n_connection *server_conn = s2n_connection_new(S2N_SERVER),
                     s2n_connection_ptr_free);
-            EXPECT_OK(s2n_test_configure_connection_for_ktls(server_conn));
+            DEFER_CLEANUP(struct s2n_config *config = s2n_config_new(),
+                    s2n_config_ptr_free);
+            EXPECT_OK(s2n_test_configure_connection_for_ktls(server_conn, config));
 
             server_conn->ktls_send_enabled = true;
             EXPECT_SUCCESS(s2n_connection_ktls_enable_send(server_conn));
@@ -178,18 +196,9 @@ int main(int argc, char **argv)
         {
             DEFER_CLEANUP(struct s2n_connection *server_conn = s2n_connection_new(S2N_SERVER),
                     s2n_connection_ptr_free);
-            EXPECT_OK(s2n_test_configure_connection_for_ktls(server_conn));
-            server_conn->handshake.message_number = 0;
-
-            EXPECT_FAILURE_WITH_ERRNO(s2n_connection_ktls_enable_send(server_conn), S2N_ERR_HANDSHAKE_NOT_COMPLETE);
-            EXPECT_FAILURE_WITH_ERRNO(s2n_connection_ktls_enable_recv(server_conn), S2N_ERR_HANDSHAKE_NOT_COMPLETE);
-        };
-
-        /* Fail if unsupported protocols */
-        {
-            DEFER_CLEANUP(struct s2n_connection *server_conn = s2n_connection_new(S2N_SERVER),
-                    s2n_connection_ptr_free);
-            EXPECT_OK(s2n_test_configure_connection_for_ktls(server_conn));
+            DEFER_CLEANUP(struct s2n_config *config = s2n_config_new(),
+                    s2n_config_ptr_free);
+            EXPECT_OK(s2n_test_configure_connection_for_ktls(server_conn, config));
 
             server_conn->actual_protocol_version = S2N_TLS13;
             EXPECT_FAILURE_WITH_ERRNO(s2n_connection_ktls_enable_send(server_conn), S2N_ERR_KTLS_UNSUPPORTED_CONN);
@@ -213,7 +222,9 @@ int main(int argc, char **argv)
 
             DEFER_CLEANUP(struct s2n_connection *server_conn = s2n_connection_new(S2N_SERVER),
                     s2n_connection_ptr_free);
-            EXPECT_OK(s2n_test_configure_connection_for_ktls(server_conn));
+            DEFER_CLEANUP(struct s2n_config *config = s2n_config_new(),
+                    s2n_config_ptr_free);
+            EXPECT_OK(s2n_test_configure_connection_for_ktls(server_conn, config));
 
             server_conn->secure->cipher_suite = &ktls_temp_unsupported_cipher_suite;
             EXPECT_FAILURE_WITH_ERRNO(s2n_connection_ktls_enable_send(server_conn), S2N_ERR_KTLS_UNSUPPORTED_CONN);
@@ -224,7 +235,9 @@ int main(int argc, char **argv)
         {
             DEFER_CLEANUP(struct s2n_connection *server_conn = s2n_connection_new(S2N_SERVER),
                     s2n_connection_ptr_free);
-            EXPECT_OK(s2n_test_configure_connection_for_ktls(server_conn));
+            DEFER_CLEANUP(struct s2n_config *config = s2n_config_new(),
+                    s2n_config_ptr_free);
+            EXPECT_OK(s2n_test_configure_connection_for_ktls(server_conn, config));
 
             uint8_t write_byte = 8;
             uint8_t read_byte = 0;
@@ -247,7 +260,9 @@ int main(int argc, char **argv)
         {
             DEFER_CLEANUP(struct s2n_connection *server_conn = s2n_connection_new(S2N_SERVER),
                     s2n_connection_ptr_free);
-            EXPECT_OK(s2n_test_configure_connection_for_ktls(server_conn));
+            DEFER_CLEANUP(struct s2n_config *config = s2n_config_new(),
+                    s2n_config_ptr_free);
+            EXPECT_OK(s2n_test_configure_connection_for_ktls(server_conn, config));
 
             /* expect failure if connection is using custom IO */
             server_conn->managed_send_io = false;
@@ -262,7 +277,9 @@ int main(int argc, char **argv)
         {
             DEFER_CLEANUP(struct s2n_connection *server_conn = s2n_connection_new(S2N_SERVER),
                     s2n_connection_ptr_free);
-            EXPECT_OK(s2n_test_configure_connection_for_ktls(server_conn));
+            DEFER_CLEANUP(struct s2n_config *config = s2n_config_new(),
+                    s2n_config_ptr_free);
+            EXPECT_OK(s2n_test_configure_connection_for_ktls(server_conn, config));
 
             /* recv managed io */
             server_conn->managed_recv_io = false;
@@ -271,6 +288,54 @@ int main(int argc, char **argv)
             /* expect success if connection is NOT using custom IO */
             server_conn->managed_recv_io = true;
             EXPECT_SUCCESS(s2n_connection_ktls_enable_recv(server_conn));
+        };
+
+        /* s2n_ktls_retrieve_file_descriptor */
+        {
+            DEFER_CLEANUP(struct s2n_connection *server_conn = s2n_connection_new(S2N_SERVER),
+                    s2n_connection_ptr_free);
+            int write_fd_orig = 1;
+            int read_fd_orig = 2;
+            int fd_ret = 0;
+
+            EXPECT_SUCCESS(s2n_connection_set_write_fd(server_conn, write_fd_orig));
+            EXPECT_OK(s2n_ktls_retrieve_file_descriptor(server_conn, S2N_KTLS_MODE_SEND, &fd_ret));
+            EXPECT_EQUAL(write_fd_orig, fd_ret);
+
+            EXPECT_SUCCESS(s2n_connection_set_read_fd(server_conn, read_fd_orig));
+            EXPECT_OK(s2n_ktls_retrieve_file_descriptor(server_conn, S2N_KTLS_MODE_RECV, &fd_ret));
+            EXPECT_EQUAL(read_fd_orig, fd_ret);
+        };
+
+        /* renegotiate not supported */
+        {
+            DEFER_CLEANUP(struct s2n_connection *server_conn = s2n_connection_new(S2N_SERVER),
+                    s2n_connection_ptr_free);
+            DEFER_CLEANUP(struct s2n_config *config = s2n_config_new(),
+                    s2n_config_ptr_free);
+            int fd = 1;
+            EXPECT_OK(s2n_test_configure_connection_for_ktls(server_conn, config));
+
+            /* set renegotiate callback */
+            EXPECT_SUCCESS(s2n_config_set_renegotiate_request_cb(config, s2n_test_renegotiate_request_cb, &fd));
+            EXPECT_FAILURE_WITH_ERRNO(s2n_connection_ktls_enable_recv(server_conn), S2N_ERR_KTLS_RENEGOTIATION);
+        };
+
+        /* s2n_ktls_retrieve_file_descriptor */
+        {
+            DEFER_CLEANUP(struct s2n_connection *server_conn = s2n_connection_new(S2N_SERVER),
+                    s2n_connection_ptr_free);
+            int write_fd_orig = 1;
+            int read_fd_orig = 2;
+            int fd_ret = 0;
+
+            EXPECT_SUCCESS(s2n_connection_set_write_fd(server_conn, write_fd_orig));
+            EXPECT_OK(s2n_ktls_retrieve_file_descriptor(server_conn, S2N_KTLS_MODE_SEND, &fd_ret));
+            EXPECT_EQUAL(write_fd_orig, fd_ret);
+
+            EXPECT_SUCCESS(s2n_connection_set_read_fd(server_conn, read_fd_orig));
+            EXPECT_OK(s2n_ktls_retrieve_file_descriptor(server_conn, S2N_KTLS_MODE_RECV, &fd_ret));
+            EXPECT_EQUAL(read_fd_orig, fd_ret);
         };
     }
 

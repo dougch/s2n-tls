@@ -37,6 +37,7 @@
 #include "tls/s2n_handshake.h"
 #include "tls/s2n_internal.h"
 #include "tls/s2n_kem.h"
+#include "tls/s2n_ktls.h"
 #include "tls/s2n_prf.h"
 #include "tls/s2n_record.h"
 #include "tls/s2n_resume.h"
@@ -49,6 +50,7 @@
 #include "utils/s2n_mem.h"
 #include "utils/s2n_random.h"
 #include "utils/s2n_safety.h"
+#include "utils/s2n_safety_macros.h"
 #include "utils/s2n_socket.h"
 #include "utils/s2n_timer.h"
 
@@ -352,7 +354,7 @@ int s2n_connection_set_config(struct s2n_connection *conn, struct s2n_config *co
      * However, the s2n_config_set_verification_ca_location behavior predates client authentication
      * support for OCSP stapling, so could only affect whether clients requested OCSP stapling. We
      * therefore only have to maintain the legacy behavior for clients, not servers.
-     * 
+     *
      * Note: The Rust bindings do not maintain the legacy behavior.
      */
     conn->request_ocsp_status = config->ocsp_status_requested_by_user;
@@ -580,6 +582,11 @@ int s2n_connection_wipe(struct s2n_connection *conn)
     /* Initialize remaining values */
     conn->blinding = S2N_BUILT_IN_BLINDING;
     conn->session_ticket_status = S2N_NO_TICKET;
+
+    /* conn->ktls_send = s2n_ktls_send; */
+    /* conn->ktls_send_io_context = NULL; */
+    /* conn->ktls_recv = s2n_ktls_recv; */
+    /* conn->ktls_recv_io_context = NULL; */
 
     return 0;
 }
@@ -833,6 +840,7 @@ int s2n_connection_get_write_fd(struct s2n_connection *conn, int *writefd)
     *writefd = peer_socket_ctx->fd;
     return S2N_SUCCESS;
 }
+
 int s2n_connection_set_fd(struct s2n_connection *conn, int fd)
 {
     POSIX_GUARD(s2n_connection_set_read_fd(conn, fd));

@@ -21,6 +21,7 @@
 
 #include "testlib/s2n_testlib.h"
 #include "tls/s2n_connection.h"
+#include "tls/s2n_ktls.h"
 #include "utils/s2n_safety.h"
 #include "utils/s2n_socket.h"
 
@@ -114,6 +115,16 @@ S2N_RESULT s2n_io_stuffer_pair_init(struct s2n_test_io_stuffer_pair *io_pair)
     RESULT_ENSURE_REF(io_pair);
     RESULT_GUARD_POSIX(s2n_stuffer_growable_alloc(&io_pair->client_in, 0));
     RESULT_GUARD_POSIX(s2n_stuffer_growable_alloc(&io_pair->server_in, 0));
+    return S2N_RESULT_OK;
+}
+
+S2N_CLEANUP_RESULT s2n_ktls_io_pair_free(struct s2n_test_ktls_io_pair *ctx)
+{
+    RESULT_ENSURE_REF(ctx);
+    RESULT_GUARD_POSIX(s2n_stuffer_free(&ctx->client_in.data));
+    RESULT_GUARD_POSIX(s2n_stuffer_free(&ctx->client_in.ancillary));
+    RESULT_GUARD_POSIX(s2n_stuffer_free(&ctx->server_in.data));
+    RESULT_GUARD_POSIX(s2n_stuffer_free(&ctx->server_in.ancillary));
     return S2N_RESULT_OK;
 }
 

@@ -19,6 +19,7 @@
 
 #include "stuffer/s2n_stuffer.h"
 #include "tls/s2n_connection.h"
+#include "tls/s2n_ktls.h"
 
 extern const struct s2n_ecc_preferences ecc_preferences_for_retry;
 extern const struct s2n_security_policy security_policy_test_tls13_retry;
@@ -65,6 +66,12 @@ int s2n_io_pair_shutdown_one_end(struct s2n_test_io_pair *io_pair, int mode_to_c
 int s2n_connection_set_io_pair(struct s2n_connection *conn, struct s2n_test_io_pair *io_pair);
 int s2n_connections_set_io_pair(struct s2n_connection *client, struct s2n_connection *server,
         struct s2n_test_io_pair *io_pair);
+
+struct s2n_test_ktls_io_pair {
+    struct s2n_ktls_io_ctx client_in;
+    struct s2n_ktls_io_ctx server_in;
+};
+S2N_CLEANUP_RESULT s2n_ktls_io_pair_free(struct s2n_test_ktls_io_pair *ctx);
 
 int s2n_fd_set_blocking(int fd);
 int s2n_fd_set_non_blocking(int fd);
@@ -252,3 +259,9 @@ struct self_talk_inet_socket_callbacks {
     S2N_RESULT (*c_post_handshake_cb)(struct s2n_connection *conn);
 };
 extern const struct self_talk_inet_socket_callbacks noop_inet_cb;
+
+/* kTLS */
+extern S2N_RESULT noop_cb(struct s2n_connection *conn);
+extern S2N_RESULT enable_recv_cb(struct s2n_connection *conn);
+extern S2N_RESULT enable_send_cb(struct s2n_connection *conn);
+extern S2N_RESULT enable_send_and_recv_cb(struct s2n_connection *conn);
