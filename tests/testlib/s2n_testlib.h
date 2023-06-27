@@ -253,5 +253,10 @@ struct self_talk_inet_socket_callbacks {
 };
 extern const struct self_talk_inet_socket_callbacks noop_inet_cb;
 
+extern S2N_RESULT noop_cb(struct s2n_connection *conn);
+extern S2N_RESULT enable_recv_cb(struct s2n_connection *conn);
+extern S2N_RESULT enable_send_cb(struct s2n_connection *conn);
+extern S2N_RESULT enable_send_and_recv_cb(struct s2n_connection *conn);
+
 /* kTLS */
 S2N_RESULT s2n_test_configure_ktls_connection(struct s2n_connection *conn, int *out_fd, bool complete_handshake);

@@ -15,6 +15,7 @@
 
 #include <sys/param.h>
 
+#include "tls/s2n_ktls.h"
 /* Use usleep */
 #define _XOPEN_SOURCE 500
 #include <errno.h>
@@ -58,6 +59,11 @@ S2N_RESULT s2n_read_in_bytes(struct s2n_connection *conn, struct s2n_stuffer *ou
 
 int s2n_read_full_record(struct s2n_connection *conn, uint8_t *record_type, int *isSSLv2)
 {
+    /* I/O is managed manually when kTLS is enabled so confirm this code is unreachable */
+    if (conn->ktls_recv_enabled) {
+        POSIX_GUARD_RESULT(s2n_connection_apply_error_blinding(&conn));
+    }
+
     *isSSLv2 = 0;
 
     /* If the record has already been decrypted, then leave it alone */
@@ -127,6 +133,8 @@ ssize_t s2n_recv_impl(struct s2n_connection *conn, void *buf, ssize_t size, s2n_
          *# closed, the TLS implementation MUST receive a "close_notify" alert
          *# before indicating end-of-data to the application layer.
          */
+        /* char mode = conn->mode == S2N_SERVER ? 's' : 'c'; */
+        /* printf("\n%c ------------ s2n_recv_impl close_notify_received: %d\n", mode, conn->close_notify_received.val); */
         POSIX_ENSURE(s2n_atomic_flag_test(&conn->close_notify_received), S2N_ERR_CLOSED);
         *blocked = S2N_NOT_BLOCKED;
         return 0;
@@ -140,8 +148,15 @@ ssize_t s2n_recv_impl(struct s2n_connection *conn, void *buf, ssize_t size, s2n_
     while (size && s2n_connection_check_io_status(conn, S2N_IO_READABLE)) {
         int isSSLv2 = 0;
         uint8_t record_type;
-        int r = s2n_read_full_record(conn, &record_type, &isSSLv2);
-        if (r < 0) {
+        int read_result = -1;
+        ssize_t ktls_bytes_read = -1;
+        if (conn->ktls_recv_enabled) {
+            POSIX_GUARD_RESULT(s2n_ktls_recv(conn, (uint8_t *) buf, size, &record_type, blocked, &ktls_bytes_read));
+            read_result = S2N_SUCCESS;
+        } else {
+            read_result = s2n_read_full_record(conn, &record_type, &isSSLv2);
+        }
+        if (read_result < 0) {
             /* Don't propagate the error if we already read some bytes.
              * We'll report S2N_ERR_CLOSED on the next call.
              */
@@ -205,9 +220,12 @@ ssize_t s2n_recv_impl(struct s2n_connection *conn, void *buf, ssize_t size, s2n_
             continue;
         }
 
-        out.size = MIN(size, s2n_stuffer_data_available(&conn->in));
-
-        POSIX_GUARD(s2n_stuffer_erase_and_read(&conn->in, &out));
+        if (conn->ktls_recv_enabled) {
+            out.size = MIN(size, ktls_bytes_read);
+        } else {
+            out.size = MIN(size, s2n_stuffer_data_available(&conn->in));
+            POSIX_GUARD(s2n_stuffer_erase_and_read(&conn->in, &out));
+        }
         bytes_read += out.size;
 
         out.data += out.size;
@@ -220,12 +238,12 @@ ssize_t s2n_recv_impl(struct s2n_connection *conn, void *buf, ssize_t size, s2n_
             conn->in_status = ENCRYPTED;
         }
 
+        /* printf("--------------------- here %zd %zd\n", bytes_read, ktls_bytes_read); */
         /* If we've read some data, return it in legacy mode */
         if (bytes_read && !conn->config->recv_multi_record) {
             break;
         }
     }
-
     if (s2n_stuffer_data_available(&conn->in) == 0) {
         *blocked = S2N_NOT_BLOCKED;
     }

@@ -15,6 +15,8 @@
 
 #include "tls/s2n_ktls.h"
 
+#include "s2n.h"
+
 #if defined(__linux__)
     #include <sys/socket.h>
 #endif
@@ -315,4 +317,17 @@ S2N_RESULT s2n_disable_ktls_socket_config_for_testing(void)
     disable_ktls_socket_config_for_testing = true;
 
     return S2N_RESULT_OK;
+}
+
+bool s2n_connection_is_ktls_enabled(struct s2n_connection *conn, s2n_ktls_mode ktls_mode)
+{
+    switch (ktls_mode) {
+        case S2N_KTLS_MODE_RECV:
+            return conn->ktls_recv_enabled;
+            break;
+        case S2N_KTLS_MODE_SEND:
+            return conn->ktls_send_enabled;
+            break;
+    }
+    return false;
 }

@@ -24,8 +24,10 @@
 #include "tls/s2n_cipher_suites.h"
 #include "tls/s2n_connection.h"
 #include "tls/s2n_handshake.h"
+#include "tls/s2n_ktls.h"
 #include "tls/s2n_post_handshake.h"
 #include "tls/s2n_record.h"
+#include "tls/s2n_tls_parameters.h"
 #include "utils/s2n_blob.h"
 #include "utils/s2n_safety.h"
 
@@ -80,6 +82,10 @@ bool s2n_should_flush(struct s2n_connection *conn, ssize_t total_message_size)
 
 int s2n_flush(struct s2n_connection *conn, s2n_blocked_status *blocked)
 {
+    /* I/O is managed manually when kTLS is enabled so confirm this code is unreachable */
+    if (conn->ktls_send_enabled) {
+        POSIX_BAIL(S2N_ERR_SAFETY);
+    }
     *blocked = S2N_BLOCKED_ON_WRITE;
 
     /* Write any data that's already pending */
@@ -113,6 +119,20 @@ ssize_t s2n_sendv_with_offset_impl(struct s2n_connection *conn, const struct iov
 
     POSIX_ENSURE(s2n_connection_check_io_status(conn, S2N_IO_WRITABLE), S2N_ERR_CLOSED);
     POSIX_ENSURE(!s2n_connection_is_quic_enabled(conn), S2N_ERR_UNSUPPORTED_WITH_QUIC);
+
+    if (conn->ktls_send_enabled) {
+        *blocked = S2N_BLOCKED_ON_WRITE;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-qual"
+        /* FIXME handle offs. offs should be 0 since kTLS sends entire record */
+        /* FIXME: do we need the 'Defensive check against an invalid retry' below? something with offs */
+        POSIX_GUARD_RESULT(s2n_ktls_send(conn, (struct iovec *) bufs, count, TLS_APPLICATION_DATA, blocked, &total_size));
+#pragma GCC diagnostic pop
+        *blocked = S2N_NOT_BLOCKED;
+
+        /* FIXME handle partial sent. this ties back into offs since applicaiton is supposed to call with same buffer + offs */
+        return total_size;
+    }
 
     /* Flush any pending I/O */
     POSIX_GUARD(s2n_flush(conn, blocked));

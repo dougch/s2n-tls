@@ -23,7 +23,7 @@
 #include "stdio.h"
 #include "sys/types.h"
 #include "testlib/s2n_testlib.h"
-#include "tls/s2n_ktls.h"
+#include "utils/s2n_safety_macros.h"
 
 /* There are issues with MacOS and FreeBSD so we define the constant ourselves.
  * https://stackoverflow.com/a/34042435 */
@@ -71,7 +71,7 @@ S2N_RESULT start_client(int fd, int read_pipe, const struct self_talk_inet_socke
 
     char sync = 0;
     char recv_buffer[50] = { 0 };
-    uint8_t partial_read_len = 3;
+    uint8_t partial_read_len = 2;
     uint8_t *test_data_ptr = test_data;
     {
         RESULT_GUARD_POSIX(read(read_pipe, &sync, 1));
@@ -94,34 +94,29 @@ S2N_RESULT start_client(int fd, int read_pipe, const struct self_talk_inet_socke
             RESULT_ENSURE_EQ(memcmp(test_data_ptr, recv_buffer, SEND_LEN), 0);
             test_data_ptr += SEND_LEN;
         }
-
         /* read record 2 */
-        uint8_t to_read_extra = 4; /* make sure <= SEND_LEN */
-        uint8_t did_read_extra = 0;
+        uint8_t read_extra = 15;
         {
-            ssize_t read_len = s2n_recv(client_conn, recv_buffer, SEND_LEN + to_read_extra, &blocked);
+            ssize_t read_len = s2n_recv(client_conn, recv_buffer, SEND_LEN + read_extra, &blocked);
             printf("========== recv  %zd %c %c\n", read_len, recv_buffer[0], recv_buffer[1]);
             RESULT_GUARD_POSIX(read_len);
-
-            /* FIXME So kTLS reads multi-records, which is different than the default s2n-tls read. next line fails for kTLS */
-            did_read_extra = read_len - SEND_LEN;
-            if (s2n_connection_is_ktls_enabled(client_conn, S2N_KTLS_MODE_RECV)) {
-                RESULT_ENSURE_EQ(to_read_extra, did_read_extra);
-            } else {
-                RESULT_ENSURE_EQ(0, did_read_extra);
-            }
-            RESULT_ENSURE_EQ(read_len, read_len);
-            RESULT_ENSURE_EQ(memcmp(test_data_ptr, recv_buffer, read_len), 0);
-            test_data_ptr += read_len;
+            /* since next record is alert, ktls only returns SEND_LEN */
+            RESULT_ENSURE_EQ(read_len, SEND_LEN);
+            RESULT_ENSURE_EQ(memcmp(test_data_ptr, recv_buffer, SEND_LEN), 0);
+            test_data_ptr += SEND_LEN;
         }
 
-        /* read record 3 */
+        /* read alert */
         RESULT_GUARD_POSIX(read(read_pipe, &sync, 1));
         {
-            ssize_t read_len = s2n_recv(client_conn, recv_buffer, SEND_LEN - did_read_extra, &blocked);
+            ssize_t read_len = s2n_recv(client_conn, recv_buffer, SEND_LEN + 11, &blocked);
+            EXPECT_FAILURE_WITH_ERRNO(read_len, S2N_ERR_ALERT);
             printf("========== recv  %zd %c %c\n", read_len, recv_buffer[0], recv_buffer[1]);
-            RESULT_ENSURE_EQ(memcmp(test_data_ptr, recv_buffer, SEND_LEN - did_read_extra), 0);
         }
+
+        /* try read record 3 */
+        RESULT_GUARD_POSIX(read(read_pipe, &sync, 1));
+        EXPECT_FAILURE_WITH_ERRNO(s2n_recv(client_conn, recv_buffer, SEND_LEN, &blocked), S2N_ERR_CLOSED);
     }
 
     return S2N_RESULT_OK;
@@ -168,11 +163,23 @@ S2N_RESULT start_server(int fd, int write_pipe, const struct self_talk_inet_sock
     }
     EXPECT_SUCCESS(write(write_pipe, &sync, 1));
 
-    /* send record 3 */
+    /* write alert */
     {
-        test_data_ptr += SEND_LEN;
-        EXPECT_SUCCESS(s2n_send(server_conn, test_data_ptr, SEND_LEN, &blocked));
+        EXPECT_SUCCESS(s2n_queue_reader_handshake_failure_alert(server_conn));
+        EXPECT_SUCCESS(s2n_shutdown(server_conn, &blocked));
+
+        EXPECT_TRUE(server_conn->alert_sent);
+        EXPECT_FALSE(s2n_atomic_flag_test(&server_conn->close_notify_received));
+        EXPECT_TRUE(s2n_atomic_flag_test(&server_conn->write_closed));
+        EXPECT_TRUE(s2n_atomic_flag_test(&server_conn->read_closed));
+        EXPECT_TRUE(s2n_connection_check_io_status(server_conn, S2N_IO_CLOSED));
+
+        EXPECT_SUCCESS(write(write_pipe, &sync, 1));
     }
+
+    /* try to send record 3 */
+    test_data_ptr += SEND_LEN;
+    EXPECT_FAILURE_WITH_ERRNO(s2n_send(server_conn, test_data_ptr, 1, &blocked), S2N_ERR_CLOSED);
     EXPECT_SUCCESS(write(write_pipe, &sync, 1));
 
     return S2N_RESULT_OK;

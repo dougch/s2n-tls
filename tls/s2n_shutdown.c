@@ -16,6 +16,7 @@
 #include "api/s2n.h"
 #include "tls/s2n_alerts.h"
 #include "tls/s2n_connection.h"
+#include "tls/s2n_ktls.h"
 #include "tls/s2n_tls.h"
 #include "utils/s2n_atomic.h"
 #include "utils/s2n_safety.h"
@@ -67,8 +68,10 @@ int s2n_shutdown_send(struct s2n_connection *conn, s2n_blocked_status *blocked)
     }
 
     /* Flush any outstanding data */
-    s2n_atomic_flag_set(&conn->write_closed);
-    POSIX_GUARD(s2n_flush(conn, blocked));
+    if (!conn->ktls_send_enabled) {
+        s2n_atomic_flag_set(&conn->write_closed);
+        POSIX_GUARD(s2n_flush(conn, blocked));
+    }
 
     /* For a connection closed due to receiving an alert, we don't send anything. */
     if (s2n_atomic_flag_test(&conn->error_alert_received)) {
@@ -93,8 +96,24 @@ int s2n_shutdown_send(struct s2n_connection *conn, s2n_blocked_status *blocked)
      *# Each party MUST send a "close_notify" alert before closing its write
      *# side of the connection, unless it has already sent some error alert.
      */
-    POSIX_GUARD_RESULT(s2n_alerts_write_error_or_close_notify(conn));
-    POSIX_GUARD(s2n_flush(conn, blocked));
+    if (conn->ktls_send_enabled) {
+        struct s2n_blob alert_data = { 0 };
+        uint8_t alert_bytes[2] = { 0 };
+        POSIX_GUARD(s2n_blob_init(&alert_data, alert_bytes, sizeof(alert_bytes)));
+        POSIX_GUARD_RESULT(s2n_alerts_get_error_or_close_notify(conn, &alert_data));
+
+        ssize_t result = -1;
+        struct iovec iov;
+        iov.iov_base = (void *) (uintptr_t) alert_data.data;
+        iov.iov_len = alert_data.size;
+        printf("\n\n\n================================================================ s2n_shutdown_send %d\n ", s2n_stuffer_data_available(&conn->in));
+        /* iov.iov_len = 1; */
+        POSIX_GUARD_RESULT(s2n_ktls_send(conn, &iov, 1, TLS_ALERT, blocked, &result));
+    } else {
+        POSIX_GUARD_RESULT(s2n_alerts_write_error_or_close_notify(conn));
+        POSIX_GUARD(s2n_flush(conn, blocked));
+    }
+
     return S2N_SUCCESS;
 }
 
@@ -121,7 +140,11 @@ int s2n_shutdown(struct s2n_connection *conn, s2n_blocked_status *blocked)
     int isSSLv2 = false;
     *blocked = S2N_BLOCKED_ON_READ;
     while (!s2n_atomic_flag_test(&conn->close_notify_received)) {
-        POSIX_GUARD(s2n_read_full_record(conn, &record_type, &isSSLv2));
+        if (conn->ktls_recv_enabled) {
+            POSIX_GUARD_RESULT(s2n_ktls_recv_alert(conn, &record_type, blocked));
+        } else {
+            POSIX_GUARD(s2n_read_full_record(conn, &record_type, &isSSLv2));
+        }
         POSIX_ENSURE(!isSSLv2, S2N_ERR_BAD_MESSAGE);
         if (record_type == TLS_ALERT) {
             POSIX_GUARD(s2n_process_alert_fragment(conn));
