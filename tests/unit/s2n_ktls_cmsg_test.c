@@ -29,6 +29,7 @@ S2N_RESULT s2n_ktls_recv_control_msg(int sock, struct msghdr *msg,
         uint8_t *record_type, s2n_blocked_status *blocked, ssize_t *result);
 
 #define TEST_MAX_DATA_LEN 20000
+uint8_t TEST_SEND_RECORD_TYPE = 10;
 
 S2N_RESULT helper_generate_test_data(struct s2n_blob *test_data)
 {
@@ -146,25 +147,21 @@ int main(int argc, char **argv)
 
     /* create and parse ancillary data */
     {
-        uint8_t send_record_type = 10;
         int fd = 0;
         s2n_blocked_status blocked = S2N_NOT_BLOCKED;
         ssize_t result = 0;
         union {
-            char buf[CMSG_SPACE(sizeof(send_record_type))];
-            /* Space large enough to hold a ucred structure */
+            char buf[CMSG_SPACE(sizeof(TEST_SEND_RECORD_TYPE))];
             struct cmsghdr align;
         } control_msg;
 
         /* Init msghdr */
         struct msghdr s_msg = { 0 };
-        s_msg.msg_name = NULL;
-        s_msg.msg_namelen = 0;
         s_msg.msg_control = control_msg.buf;
         s_msg.msg_controllen = sizeof(control_msg.buf);
 
         /* create the control_msg */
-        EXPECT_OK(s2n_ktls_send_control_msg(fd, &s_msg, send_record_type, &blocked, &result));
+        EXPECT_OK(s2n_ktls_send_control_msg(fd, &s_msg, TEST_SEND_RECORD_TYPE, &blocked, &result));
 
         /* parse ancillary data */
         {
@@ -175,15 +172,95 @@ int main(int argc, char **argv)
             /* assert that we can parse the same record_type */
             uint8_t recv_record_type = 0;
             EXPECT_OK(s2n_ktls_recv_control_msg(fd, &s_msg, &recv_record_type, &blocked, &result));
-            EXPECT_EQUAL(recv_record_type, send_record_type);
+            EXPECT_EQUAL(recv_record_type, TEST_SEND_RECORD_TYPE);
 
             /* record_type should default to TLS_APPLICATION_DATA */
             hdr->cmsg_type = 0;
             hdr->cmsg_level = 0;
             recv_record_type = 0;
-            EXPECT_OK(s2n_ktls_recv_control_msg(fd, &s_msg, &recv_record_type, &blocked, &result));
-            EXPECT_EQUAL(recv_record_type, TLS_APPLICATION_DATA);
+            EXPECT_ERROR_WITH_ERRNO(s2n_ktls_recv_control_msg(fd, &s_msg, &recv_record_type, &blocked, &result), S2N_ERR_IO);
         }
+    }
+
+    /* create and parse ancillary data */
+    {
+        int fd = 0;
+        s2n_blocked_status blocked = S2N_NOT_BLOCKED;
+        ssize_t result = 0;
+        union {
+            /* Space large enough to hold 2 record_type */
+            char buf[CMSG_SPACE(sizeof(TEST_SEND_RECORD_TYPE)) * 2];
+            struct cmsghdr align;
+        } control_msg;
+
+        /* Init msghdr */
+        struct msghdr s_msg = { 0 };
+        memset(&control_msg.buf, 0, sizeof(control_msg.buf));
+        s_msg.msg_control = control_msg.buf;
+        s_msg.msg_controllen = sizeof(control_msg.buf);
+
+        /* create the control_msg */
+        EXPECT_OK(s2n_ktls_send_control_msg(fd, &s_msg, TEST_SEND_RECORD_TYPE, &blocked, &result));
+
+        /* parse control_msg */
+        /* modify control_msg for the recv side */
+        struct cmsghdr *hdr = CMSG_FIRSTHDR(&s_msg);
+        hdr->cmsg_type = S2N_TLS_GET_RECORD_TYPE;
+        {
+            uint8_t recv_record_type = 0;
+            /* assert that we can parse the same record_type */
+            {
+                EXPECT_OK(s2n_ktls_recv_control_msg(fd, &s_msg, &recv_record_type, &blocked, &result));
+                EXPECT_EQUAL(recv_record_type, TEST_SEND_RECORD_TYPE);
+            }
+
+            /* modify first hdr so that level doesnt match S2N_SOL_TLS */
+            {
+                hdr->cmsg_level = 0;
+
+                recv_record_type = 0;
+                EXPECT_ERROR_WITH_ERRNO(s2n_ktls_recv_control_msg(fd, &s_msg, &recv_record_type, &blocked, &result), S2N_ERR_IO);
+            }
+
+            /* should search all possible cmsg for record_type
+             *
+             * add a second (CMSG_NXTHDR) header with the record_type
+             */
+            {
+                /* confirm first header doesnt match record_type */
+                EXPECT_ERROR_WITH_ERRNO(s2n_ktls_recv_control_msg(fd, &s_msg, &recv_record_type, &blocked, &result), S2N_ERR_IO);
+
+                /* add second cmsg with record_type */
+                struct cmsghdr *nxt = CMSG_NXTHDR(&s_msg, hdr);
+                EXPECT_NOT_NULL(nxt);
+                nxt->cmsg_level = S2N_SOL_TLS;
+                nxt->cmsg_type = S2N_TLS_GET_RECORD_TYPE;
+                nxt->cmsg_len = CMSG_LEN(sizeof(uint8_t));
+                POSIX_CHECKED_MEMCPY(CMSG_DATA(nxt), &TEST_SEND_RECORD_TYPE, sizeof(TEST_SEND_RECORD_TYPE));
+
+                recv_record_type = 0;
+                EXPECT_OK(s2n_ktls_recv_control_msg(fd, &s_msg, &recv_record_type, &blocked, &result));
+                EXPECT_EQUAL(recv_record_type, TEST_SEND_RECORD_TYPE);
+            }
+        }
+    }
+#else
+    {
+        char buf[sizeof(uint8_t)];
+        int fd = 0;
+        s2n_blocked_status blocked = S2N_NOT_BLOCKED;
+        ssize_t result = 0;
+        uint8_t record_type = 0;
+
+        /* Init msghdr */
+        struct msghdr msg = { 0 };
+        msg.msg_control = buf;
+        msg.msg_controllen = sizeof(record_type);
+
+        /* create the control_msg */
+        EXPECT_ERROR_WITH_ERRNO(s2n_ktls_send_control_msg(fd, &msg, record_type, &blocked, &result), S2N_ERR_KTLS_UNSUPPORTED_PLATFORM);
+
+        EXPECT_ERROR_WITH_ERRNO(s2n_ktls_recv_control_msg(fd, &msg, &record_type, &blocked, &result), S2N_ERR_KTLS_UNSUPPORTED_PLATFORM);
     }
 #endif
 
