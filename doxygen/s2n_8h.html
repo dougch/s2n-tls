@@ -23,7 +23,7 @@
  <tr id="projectrow">
   <td id="projectlogo"><img alt="Logo" src="s2n-logo-github.svg"/></td>
   <td id="projectalign">
-   <div id="projectname">AWS s2n-tls<span id="projectnumber">&#160;v9.9.9-958e0a62</span>
+   <div id="projectname">AWS s2n-tls<span id="projectnumber">&#160;v9.9.9-1a586491</span>
    </div>
    <div id="projectbrief">s2n-tls is a C99 implementation of the TLS/SSL protocols that is designed to be simple, small, fast, and with security as a priority.</div>
   </td>
@@ -683,6 +683,8 @@ Functions</h2></td></tr>
 <tr class="separator:a249408b5a39897276524176bb951dba5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aed6c509e7ec18b2a9ddb47e3e595b565"><td class="memItemLeft" align="right" valign="top"><a class="el" href="s2n_8h.html#af1c2b8586154a9094d6978137ef001ac">S2N_API</a> const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="s2n_8h.html#aed6c509e7ec18b2a9ddb47e3e595b565">s2n_connection_get_cipher</a> (struct s2n_connection *conn)</td></tr>
 <tr class="separator:aed6c509e7ec18b2a9ddb47e3e595b565"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae8c865863e6dcfa38d4de30cd11f7c40"><td class="memItemLeft" align="right" valign="top"><a class="el" href="s2n_8h.html#af1c2b8586154a9094d6978137ef001ac">S2N_API</a> int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="s2n_8h.html#ae8c865863e6dcfa38d4de30cd11f7c40">s2n_connection_tls_exporter</a> (struct s2n_connection *conn, const uint8_t *label, uint32_t label_length, const uint8_t *context, uint32_t context_length, uint8_t *output, uint32_t output_length)</td></tr>
+<tr class="separator:ae8c865863e6dcfa38d4de30cd11f7c40"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abc11d4e901bae3b322a5a3bc5dc9a5d1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="s2n_8h.html#af1c2b8586154a9094d6978137ef001ac">S2N_API</a> int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="s2n_8h.html#abc11d4e901bae3b322a5a3bc5dc9a5d1">s2n_connection_get_cipher_iana_value</a> (struct s2n_connection *conn, uint8_t *first, uint8_t *second)</td></tr>
 <tr class="separator:abc11d4e901bae3b322a5a3bc5dc9a5d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac396d45fe79efa2142be8cf491dfdbeb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="s2n_8h.html#af1c2b8586154a9094d6978137ef001ac">S2N_API</a> int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="s2n_8h.html#ac396d45fe79efa2142be8cf491dfdbeb">s2n_connection_is_valid_for_cipher_preferences</a> (struct s2n_connection *conn, const char *version)</td></tr>
@@ -5843,13 +5845,14 @@ Safety</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Gets the client certificate chain and places it in the <code>der_cert_chain_out</code> buffer. <code>cert_chain_len</code> is updated to match the size the chain buffer.</p>
-<dl class="section warning"><dt>Warning</dt><dd>The buffers share a lifetime with the s2n_connection object.</dd></dl>
+<p >Gets the raw certificate chain received from the client.</p>
+<p >The retrieved certificate chain has the format described by the TLS 1.2 RFC: <a href="https://datatracker.ietf.org/doc/html/rfc5246#section-7.4.2">https://datatracker.ietf.org/doc/html/rfc5246#section-7.4.2</a>. Each certificate is a DER-encoded ASN.1 X.509, prepended by a 3 byte network-endian length value. Note that this format is used regardless of the connection's protocol version.</p>
+<dl class="section warning"><dt>Warning</dt><dd>The buffer pointed to by <code>cert_chain_out</code> shares its lifetime with the s2n_connection object.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">conn</td><td>A pointer to the s2n_connection object </td></tr>
-    <tr><td class="paramname">der_cert_chain_out</td><td>A uint8_t pointer. This will be updated to point to the client certificate chain. </td></tr>
-    <tr><td class="paramname">cert_chain_len</td><td>A pointer to a uint32_t. This will be updated to match the size of the buffer <code>der_cert_chain_out</code> points to. </td></tr>
+    <tr><td class="paramname">cert_chain_out</td><td>A pointer that's set to the client certificate chain. </td></tr>
+    <tr><td class="paramname">cert_chain_len</td><td>A pointer that's set to the size of the <code>cert_chain_out</code> buffer. </td></tr>
   </table>
   </dd>
 </dl>
@@ -8020,6 +8023,74 @@ The callback may send less than the requested length. The function should return
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>S2N_SUCCESS on success. S2N_FAILURE on failure </dd></dl>
+
+</div>
+</div>
+<a id="ae8c865863e6dcfa38d4de30cd11f7c40" name="ae8c865863e6dcfa38d4de30cd11f7c40"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae8c865863e6dcfa38d4de30cd11f7c40">&#9670;&#160;</a></span>s2n_connection_tls_exporter()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="s2n_8h.html#af1c2b8586154a9094d6978137ef001ac">S2N_API</a> int s2n_connection_tls_exporter </td>
+          <td>(</td>
+          <td class="paramtype">struct s2n_connection *&#160;</td>
+          <td class="paramname"><em>conn</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const uint8_t *&#160;</td>
+          <td class="paramname"><em>label</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>label_length</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const uint8_t *&#160;</td>
+          <td class="paramname"><em>context</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>context_length</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t *&#160;</td>
+          <td class="paramname"><em>output</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>output_length</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Provides access to the TLS-Exporter functionality.</p>
+<p >See <a href="https://datatracker.ietf.org/doc/html/rfc5705">https://datatracker.ietf.org/doc/html/rfc5705</a> and <a href="https://www.rfc-editor.org/rfc/rfc8446">https://www.rfc-editor.org/rfc/rfc8446</a>.</p>
+<dl class="section note"><dt>Note</dt><dd>This is currently only available with TLS 1.3 connections which have finished a handshake.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">conn</td><td>A pointer to the connection </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A POSIX error signal. If an error was returned, the value contained in <code>output</code> should be considered invalid. </dd></dl>
 
 </div>
 </div>
