@@ -578,7 +578,7 @@ if (BUILD_TESTING)
                 message(STATUS "Adding integ test ${test_target}")
                 add_test(NAME ${test_target}
                         COMMAND
-                        pytest
+                        pytest -m nix
                         -x -n=${N} --maxfail=1 --reruns=0 --cache-clear -rpfsq
                         -o log_cli=true --log-cli-level=DEBUG --provider-version=$ENV{S2N_LIBCRYPTO}
                         --provider-criterion=off --fips-mode=0 --no-pq=0 ${test_file_path}

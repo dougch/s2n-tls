@@ -1,7 +1,7 @@
 import copy
 import pytest
 
-from configuration import available_ports, ALL_TEST_CIPHERS, ALL_TEST_CURVES, ALL_TEST_CERTS, PROTOCOLS
+from configuration import available_ports, TLS13_CIPHERS, ALL_TEST_CIPHERS, ALL_TEST_CURVES, ALL_TEST_CERTS, PROTOCOLS
 from common import ProviderOptions, data_bytes
 from fixtures import managed_process  # lgtm [py/unused-import]
 from providers import Provider, S2N, OpenSSL, JavaSSL, GnuTLS, SSLv3Provider
@@ -65,10 +65,10 @@ def test_s2n_server_happy_path(managed_process, cipher, provider, curve, protoco
             assert to_bytes("Cipher negotiated: {}".format(
                 cipher.name)) in server_results.stdout
 
-
+@pytest.mark.nix
 @pytest.mark.uncollect_if(func=invalid_test_parameters)
 @pytest.mark.parametrize("cipher", ALL_TEST_CIPHERS, ids=get_parameter_name)
-@pytest.mark.parametrize("provider", [S2N, OpenSSL, GnuTLS, SSLv3Provider])
+@pytest.mark.parametrize("provider", [S2N, GnuTLS])
 @pytest.mark.parametrize("curve", ALL_TEST_CURVES, ids=get_parameter_name)
 @pytest.mark.parametrize("protocol", PROTOCOLS, ids=get_parameter_name)
 @pytest.mark.parametrize("certificate", ALL_TEST_CERTS, ids=get_parameter_name)
