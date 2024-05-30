@@ -171,8 +171,8 @@ def get_oqs_openssl_override_env_vars():
     oqs_openssl_install_dir = os.environ["OQS_OPENSSL_1_1_1_INSTALL_DIR"]
 
     override_env_vars = dict()
-    override_env_vars["PATH"] = oqs_openssl_install_dir + "/bin"
-    override_env_vars["LD_LIBRARY_PATH"] = oqs_openssl_install_dir + "/lib"
+    override_env_vars["PATH"] += ":" + oqs_openssl_install_dir + "/bin"
+    override_env_vars["LD_LIBRARY_PATH"] += ":" + oqs_openssl_install_dir + "/lib"
 
     return override_env_vars
 
@@ -284,7 +284,6 @@ def test_s2nc_to_awslc_pq_handshake(managed_process, s2n_client_policy, awslc_se
     port = next(available_ports)
 
     awslc_env_vars = dict()
-    awslc_env_vars["PATH"] = os.path.abspath("../../test-deps/awslc/bin")
 
     s2nc_client_options = ProviderOptions(
         mode=Provider.ClientMode,
@@ -327,7 +326,6 @@ def test_s2nd_to_awslc_pq_handshake(managed_process, s2n_server_policy, awslc_cl
     port = next(available_ports)
 
     awslc_env_vars = dict()
-    awslc_env_vars["PATH"] = os.path.abspath("../../test-deps/awslc/bin")
 
     s2nd_server_options = ProviderOptions(
         mode=Provider.ServerMode,
