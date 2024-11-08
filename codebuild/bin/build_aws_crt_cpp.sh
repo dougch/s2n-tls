@@ -34,7 +34,11 @@ mkdir -p "$BUILD_DIR/s2n"
 # In case $BUILD_DIR is a subdirectory of current directory
 for file in *;do test "$file" != "$BUILD_DIR" && cp -r "$file" "$BUILD_DIR/s2n";done
 cd "$BUILD_DIR"
-git clone --depth 1 --shallow-submodules --recurse-submodules https://github.com/awslabs/aws-crt-cpp.git
+git clone --depth 15 --shallow-submodules --recurse-submodules https://github.com/awslabs/aws-crt-cpp.git
+cd aws-crt-cpp
+# prior to PR#677
+git checkout c21e25548edacf26150c862d1a54e206b1564e9b
+cd ..
 # Replace S2N
 rm -r aws-crt-cpp/crt/s2n
 mv s2n aws-crt-cpp/crt/
