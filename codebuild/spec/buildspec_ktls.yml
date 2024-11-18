@@ -6,14 +6,12 @@ env:
 phases:
   install:
     commands:
-      - yum update -y
-      - yum upgrade -y
-      - yum groupinstall -y 'Development Tools'
-      - yum install -y sudo wget
+      - yum update -y; yum upgrade -y
   pre_build:
     commands:
       # Work around the opinions of the nix installer.
-      - id; groupadd nixbld; useradd -m -g nixbld -G nixbld nix
+      #- id; groupadd nixbld; useradd -m -g nixbld -G nixbld nix
+      - id nix; ls -al /nix
       - |
         echo "Working around the faulty yaml parser..."
         echo 'nix ALL=NOPASSWD: ALL' > /etc/sudoers.d/nix
