@@ -3,7 +3,7 @@ version: 0.2
 phases:
   install:
     commands:
-      - yum update
+      - yum update -y
       - yum upgrade -y
       - yum groupinstall -y 'Development Tools'
       - yum install -y sudo wget
