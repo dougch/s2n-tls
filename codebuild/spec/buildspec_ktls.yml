@@ -1,5 +1,8 @@
 ---
 version: 0.2
+env:
+  variables:
+    NIX_CACHE_BUCKET: "s3://s2n-tls-nixcachebucket-x86-64?region=us-west-2"
 phases:
   install:
     commands:
@@ -19,12 +22,12 @@ phases:
       - cp -aR /home/nix/.nix-profile ~/; chown -R root /root/.nix-profile; export PATH=$HOME/.nix-profile/bin:$PATH
       # phew, nix installed, now turn on flakes.
       - mkdir -p ~/.config/nix; echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
+      - nix copy --from $NIX_CACHE_BUCKET --all  --no-check-sigs
   build:
     commands:
       - |
-        sudo modprobe tls; \
-        export S2N_CMAKE_OPTIONS=${S2N_CMAKE_OPTIONS}; \
-        export S2N_KTLS_TESTING_EXPECTED=1; \
-        nix develop .#openssl111 --command bash -c \
-        'source ./nix/shell.sh && clean && configure && unit' \
-        "
+        sudo modprobe tls
+        export S2N_CMAKE_OPTIONS=${S2N_CMAKE_OPTIONS}
+        export S2N_KTLS_TESTING_EXPECTED=1
+        nix develop .#openssl111 --command bash -c " \
+          'source ./nix/shell.sh && clean && configure && unit'"
