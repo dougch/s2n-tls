@@ -9,6 +9,8 @@ phases:
       - yum update -y; yum upgrade -y
   pre_build:
     commands:
+      - whoami
+      - cp -aR /home/nix/.nix-profile ~/; chown -R root /root/.nix-profile; export PATH=$HOME/.nix-profile/bin:$PATH
       # phew, nix installed, now turn on flakes.
       - mkdir -p ~/.config/nix; echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
       - nix copy --from $NIX_CACHE_BUCKET --all  --no-check-sigs
