@@ -3,22 +3,20 @@ version: 0.2
 env:
   variables:
     NIX_CACHE_BUCKET: "s3://s2n-tls-nixcachebucket-x86-64?region=us-west-2"
+    S2N_KTLS_TESTING_EXPECTED: 1
 phases:
   install:
     commands:
       - yum update -y; yum upgrade -y
   pre_build:
     commands:
-      - whoami
       - cp -aR /home/nix/.nix-profile ~/; chown -R root /root/.nix-profile; export PATH=$HOME/.nix-profile/bin:$PATH
       # phew, nix installed, now turn on flakes.
       - mkdir -p ~/.config/nix; echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
       - nix copy --from $NIX_CACHE_BUCKET --all  --no-check-sigs
+      - sudo modprobe tls
+      - echo "Checking that the TLS kmod loaded..."; test $(sudo lsmod|grep -c tls) = 1
   build:
     commands:
-      - ls -al; ls -al ./nix
-      - sudo modprobe tls
-      - lsmod |grep tls
-      - export S2N_CMAKE_OPTIONS=${S2N_CMAKE_OPTIONS}
-      - export S2N_KTLS_TESTING_EXPECTED=1
       - nix develop .#openssl111 --command bash -c  'source ./nix/shell.sh && clean && configure && unit'
+      - S2N_CMAKE_OPTIONS="-DASAN=ON" nix develop .#openssl111 --command bash -c  'source ./nix/shell.sh && clean && configure && unit'
