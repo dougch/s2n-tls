@@ -209,6 +209,9 @@ int main(int argc, char **argv)
         struct s2n_connection *reader = conns[S2N_PEER_MODE(mode)];
         EXPECT_SUCCESS(s2n_connection_ktls_enable_send(writer));
 
+        struct s2n_blob memory_leak = { 0 };
+        POSIX_GUARD(s2n_alloc(&memory_leak, 1));
+
         s2n_blocked_status blocked = S2N_NOT_BLOCKED;
 
         /* Test: s2n_send */
