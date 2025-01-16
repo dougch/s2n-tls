@@ -69,6 +69,11 @@ function unit {(set -e
     fi
 )}
 
+function uvinteg {(set -e
+    cd ./tests/integrationv2
+    uv run pytest --provider-version $S2N_LIBCRYPTO --best-effort-NOT-FOR-CI -x -rpfs -n auto
+)}
+
 function integ {(set -e
     apache2_start
     if [[ -z "$1" ]]; then

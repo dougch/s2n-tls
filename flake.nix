@@ -16,7 +16,6 @@
         corretto = import nix/amazon-corretto-17.nix { pkgs = pkgs; };
         # TODO: We have parts of our CI that rely on clang-format-15, but that is only available on github:nixos/nixpkgs/nixos-unstable
         llvmPkgs = pkgs.llvmPackages_14;
-        pythonEnv = import ./nix/pyenv.nix { pkgs = pkgs; };
         # Note: we're rebuilding, not importing from nixpkgs for the mkShells.
         openssl_1_0_2 = import ./nix/openssl_1_0_2.nix { pkgs = pkgs; };
         openssl_1_1_1 = import ./nix/openssl_1_1_1.nix { pkgs = pkgs; };
@@ -26,7 +25,7 @@
           # Integration Deps
           # We're not including openssl1.1.1 in our package list to avoid confusing cmake.
           # It will be in the PATH of our devShell for use in tests.
-          pythonEnv
+          pkgs.uv
           pkgs.valgrind
           corretto
           pkgs.iproute2
@@ -47,8 +46,6 @@
           # Linters/Formatters
           pkgs.shellcheck
           pkgs.nixfmt
-          pkgs.python310Packages.pep8
-          pkgs.python310Packages.ipython
 
           # Rust
           pkgs.rustup
