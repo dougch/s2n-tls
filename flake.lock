@@ -28,16 +28,16 @@
         "nixpkgs": "nixpkgs_4"
       },
       "locked": {
-        "lastModified": 1737496455,
-        "narHash": "sha256-zBJjsmqOnELGamZjN0GN/5EokgEF3DQOva27r6BMYsE=",
+        "lastModified": 1730757589,
+        "narHash": "sha256-bsqesa8GY90pHZuNXA/Q5yuHPyjZN7IAEJV/vY7Pz1w=",
         "owner": "dougch",
         "repo": "aws-lc",
-        "rev": "ab74281ab92c7fd82819e51c19cdc61624431dd7",
+        "rev": "0607ffe36504a00eefb75236f2dd9d07b179b125",
         "type": "github"
       },
       "original": {
         "owner": "dougch",
-        "ref": "nixfips-2024-09-27",
+        "ref": "nixAWS-LC-FIPS-2.0.17",
         "repo": "aws-lc",
         "type": "github"
       }
