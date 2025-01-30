@@ -76,6 +76,16 @@ batch:
           S2N_LIBCRYPTO: openssl-3.0
           TESTS: unit
       identifier: s2nUnitOpenssl3Gcc9
+    - identifier: s2nUnitOpenssl3FIPS
+      buildspec: codebuild/spec/buildspec_ubuntu.yml
+      env:
+        compute-type: BUILD_GENERAL1_LARGE
+        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu18codebuild20250128
+        privileged-mode: true
+        variables:
+          S2N_LIBCRYPTO: openssl-3.0-fips
+          COMPILER: 'clang-18'
+          TESTS: unit
     ### ubuntu24-20250128 ###
     # Openssl-1.1.1 + gcc-13: Prefer more widely used Openssl on the default
     #   ubuntu24-20250128 compiler.
@@ -225,17 +235,6 @@ batch:
           S2N_LIBCRYPTO: 'libressl'
           TESTS: unit
       identifier: s2nUnitLibressl
-    - buildspec: codebuild/spec/buildspec_ubuntu.yml
-      env:
-        compute-type: BUILD_GENERAL1_SMALL
-        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu18codebuild20250128
-        privileged-mode: true
-        variables:
-          BUILD_S2N: 'true'
-          GCC_VERSION: '9'
-          S2N_LIBCRYPTO: 'boringssl'
-          TESTS: unit
-      identifier: s2nUnitBoringssl
     - buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         compute-type: BUILD_GENERAL1_SMALL
