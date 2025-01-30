@@ -19,7 +19,7 @@ batch:
     - buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         compute-type: BUILD_GENERAL1_LARGE
-        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu18codebuild
+        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu18codebuild20250128
         privileged-mode: true
         variables:
           GCC_VERSION: NONE
@@ -29,7 +29,7 @@ batch:
     - buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         compute-type: BUILD_GENERAL1_LARGE
-        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu18codebuild
+        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu18codebuild20250128
         privileged-mode: true
         variables:
           GCC_VERSION: NONE
@@ -47,7 +47,7 @@ batch:
     - buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         compute-type: BUILD_GENERAL1_LARGE
-        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu18codebuild
+        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu18codebuild20250128
         privileged-mode: true
         variables:
           BUILD_S2N: 'true'
@@ -56,7 +56,7 @@ batch:
     - buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         compute-type: BUILD_GENERAL1_SMALL
-        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu18codebuild
+        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu18codebuild20250128
         privileged-mode: true
         variables:
           BUILD_S2N: 'true'
@@ -67,7 +67,7 @@ batch:
     - buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         compute-type: BUILD_GENERAL1_LARGE
-        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu18codebuild
+        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu18codebuild20250128
         privileged-mode: true
         variables:
           BUILD_S2N: true
@@ -76,15 +76,15 @@ batch:
           S2N_LIBCRYPTO: openssl-3.0
           TESTS: unit
       identifier: s2nUnitOpenssl3Gcc9
-    ### Ubuntu24 ###
+    ### ubuntu24-20250128 ###
     # Openssl-1.1.1 + gcc-13: Prefer more widely used Openssl on the default
-    #   Ubuntu24 compiler.
+    #   ubuntu24-20250128 compiler.
     # Aws-lc + clang-18: aws-lc is being built with clang; keep parity while building
     #   s2n-tls on a newer compiler.
     - buildspec: codebuild/spec/buildspec_ubuntu_cmake.yml
       env:
         compute-type: BUILD_GENERAL1_MEDIUM
-        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu24
+        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu24-20250128
         privileged-mode: true
         variables:
           COMPILER: 'gcc-13'
@@ -93,7 +93,7 @@ batch:
     - buildspec: codebuild/spec/buildspec_ubuntu_cmake.yml
       env:
         compute-type: BUILD_GENERAL1_MEDIUM
-        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu24
+        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu24-20250128
         privileged-mode: true
         variables:
           COMPILER: 'clang-18'
@@ -148,7 +148,7 @@ batch:
     - buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         compute-type: BUILD_GENERAL1_LARGE
-        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu18codebuild
+        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu18codebuild20250128
         privileged-mode: true
         variables:
           BUILD_S2N: 'true'
@@ -157,7 +157,7 @@ batch:
     - buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         compute-type: BUILD_GENERAL1_LARGE
-        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu18codebuild
+        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu18codebuild20250128
         privileged-mode: true
         variables:
           BUILD_S2N: 'true'
@@ -167,7 +167,7 @@ batch:
     - buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         compute-type: BUILD_GENERAL1_LARGE
-        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu18codebuild
+        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu18codebuild20250128
         privileged-mode: true
         variables:
           BUILD_S2N: 'true'
@@ -177,7 +177,7 @@ batch:
     - buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         compute-type: BUILD_GENERAL1_LARGE
-        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu24
+        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu24-20250128
         privileged-mode: true
         variables:
           GCC_VERSION: '13'
@@ -186,7 +186,7 @@ batch:
     - buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         compute-type: BUILD_GENERAL1_SMALL
-        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu18codebuild
+        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu18codebuild20250128
         privileged-mode: true
         variables:
           S2N_LIBCRYPTO: openssl-1.1.1
@@ -196,7 +196,7 @@ batch:
       buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         compute-type: BUILD_GENERAL1_SMALL
-        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu18codebuild
+        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu18codebuild20250128
         privileged-mode: true
         variables:
           TESTS: dynamicload
@@ -205,7 +205,7 @@ batch:
     - buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         compute-type: BUILD_GENERAL1_LARGE
-        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu18codebuild
+        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu18codebuild20250128
         privileged-mode: true
         variables:
           BUILD_S2N: true
@@ -217,7 +217,7 @@ batch:
     - buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         compute-type: BUILD_GENERAL1_SMALL
-        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu18codebuild
+        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu18codebuild20250128
         privileged-mode: true
         variables:
           BUILD_S2N: 'true'
@@ -228,7 +228,7 @@ batch:
     - buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         compute-type: BUILD_GENERAL1_SMALL
-        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu18codebuild
+        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu18codebuild20250128
         privileged-mode: true
         variables:
           BUILD_S2N: 'true'
@@ -239,7 +239,7 @@ batch:
     - buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         compute-type: BUILD_GENERAL1_SMALL
-        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu18codebuild
+        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu18codebuild20250128
         privileged-mode: true
         variables:
           BUILD_S2N: 'true'
@@ -250,7 +250,7 @@ batch:
     - buildspec: codebuild/spec/buildspec_ubuntu.yml
       env:
         compute-type: BUILD_GENERAL1_SMALL
-        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu22codebuild
+        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu22codebuild20250129
         privileged-mode: true
         variables:
           BUILD_S2N: 'true'
@@ -264,16 +264,16 @@ batch:
       env:
         privileged-mode: true
         compute-type: BUILD_GENERAL1_LARGE
-        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu22codebuild
+        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu22codebuild20250129
     - identifier: ThreadSanitizer
       buildspec: codebuild/spec/buildspec_tsan.yml
       env:
         privileged-mode: true
         compute-type: BUILD_GENERAL1_LARGE
-        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu22codebuild
+        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu22codebuild20250129
     - identifier: musl
       buildspec: codebuild/spec/buildspec_musl.yml
       env:
         privileged-mode: true
         compute-type: BUILD_GENERAL1_LARGE
-        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu22codebuild
+        image: 024603541914.dkr.ecr.us-west-2.amazonaws.com/docker:ubuntu22codebuild20250129
