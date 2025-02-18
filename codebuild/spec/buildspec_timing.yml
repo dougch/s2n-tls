@@ -27,10 +27,10 @@ phases:
     commands:
       - cargo test --timings
       - pwd
-      - ls -al ./extended/target/cargo-timings
+      - ls -al ./target/cargo-timings
 
 artifacts:
   # upload timing reports
   files:
     - '**/*'
-  base-directory: ./extended/target/cargo-timings/*.html
+  base-directory: ./target/cargo-timings/*.html
