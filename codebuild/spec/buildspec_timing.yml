@@ -5,12 +5,12 @@ version: 0.2
 phases:
   install:
     commands:
+      - echo "Installing cmake ..."
+      - apt update -y
+      - apt install -y cmake curl
       - echo "Installing Rust ..."
       - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
       - source $HOME/.cargo/env
-      - echo "Installing cmake ..."
-      - apt-get update -y
-      - apt-get install -y cmake
   pre_build:
     commands:
       - |
