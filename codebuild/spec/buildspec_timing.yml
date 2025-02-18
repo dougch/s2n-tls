@@ -16,7 +16,6 @@ phases:
       - . $HOME/.cargo/env
   pre_build:
     commands:
-      - ls -al /usr/local
       - |
         cd bindings/rust/extended
         ./generate.sh
@@ -27,9 +26,11 @@ phases:
   post_build:
     commands:
       - cargo test --timings
+      - pwd
+      - ls -al ./extended/target/cargo-timings
 
 artifacts:
   # upload timing reports
   files:
     - '**/*'
-  base-directory: ./bindings/rust/extended/target/cargo-timings/*.html
+  base-directory: ./extended/target/cargo-timings/*.html
