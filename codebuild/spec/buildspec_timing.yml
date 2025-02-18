@@ -4,6 +4,10 @@
 version: 0.2
 env:
   shell: bash
+  variables:
+    # This assumes you have a Rust toolchain installed
+    CARGO: "cargo +nightly"
+    OPENSSL_DIR: "/usr/local/openssl-3.0"
 phases:
   install:
     commands:
@@ -12,6 +16,7 @@ phases:
       - . $HOME/.cargo/env
   pre_build:
     commands:
+      - ls -al /usr/local
       - |
         cd bindings/rust/extended
         ./generate.sh
