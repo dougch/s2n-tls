@@ -2,15 +2,14 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 version: 0.2
+env:
+  shell: bash
 phases:
   install:
     commands:
-      - echo "Installing cmake ..."
-      - apt update -y
-      - apt install -y cmake curl
       - echo "Installing Rust ..."
       - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-      - source $HOME/.cargo/env
+      - . $HOME/.cargo/env
   pre_build:
     commands:
       - |
