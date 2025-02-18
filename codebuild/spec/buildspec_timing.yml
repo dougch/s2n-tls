@@ -1,0 +1,23 @@
+---
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+version: 0.2
+phases:
+  pre_build:
+    commands:
+      - |
+        cd bindings/rust/extended
+        ./generate.sh
+        cargo clean
+  build:
+    commands:
+      - cargo build --timings
+  post_build:
+    commands:
+      - cargo test --timings
+
+artifacts:
+  # upload timing reports
+  files:
+    - '**/*'
+  base-directory: ./bindings/rust/extended/target/cargo-timings/*.html
