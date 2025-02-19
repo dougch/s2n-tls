@@ -26,11 +26,9 @@ phases:
   post_build:
     commands:
       - cargo test --timings
-      - pwd
-      - ls -al ./target/cargo-timings
 
 artifacts:
   # upload timing reports
   files:
     - '**/*'
-  base-directory: ./target/cargo-timings/*.html
+  base-directory: bindings/rust/extended/target/cargo-timings
