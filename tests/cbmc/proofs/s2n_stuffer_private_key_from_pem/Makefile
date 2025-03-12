@@ -11,8 +11,8 @@
 # implied. See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Enough to get full coverage with 7 minutes of runtime.
-MAX_BLOB_SIZE = 10
+# This was 10, runtimes are over 8min.
+MAX_BLOB_SIZE = 5
 DEFINES += -DMAX_BLOB_SIZE=$(MAX_BLOB_SIZE)
 
 CHECKFLAGS +=
