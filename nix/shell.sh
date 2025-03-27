@@ -55,16 +55,51 @@ function build {(set -e
     fi
 )}
 
+function snapshot_unit {(set -eu
+    # Count the unit test source files vs. what cmake built vs. what ran.
+    # Intended for use in CI.
+    local SOURCE=$(ls -al tests/unit/s2n*test.c |wc -l)
+    local BUILT=$(ctest --test-dir build -N -L unit | grep -Po "^Total Tests: \K[0-9]*")
+    local RAN=$(grep -Po 'tests="\K[0-9]*' ./build/junit/unit.xml)
+    if [[ "$SOURCE" -eq "$BUILT" && "$BUILT" -eq "$RAN" ]]; then
+        echo "All $SOURCE unit tests were built and run.";
+    else
+        echo -e "Not all Unit tests were built/run: \n\tSOURCE: $SOURCE\n\tBUILT: $BUILT\n\tRAN: $RAN";
+        exit 1;
+    fi
+)}
+
+function snapshot_integ {(set -eux
+    local SOURCE=$(ls -al tests/integrationv2/test_*.py |wc -l)
+    local BUILT=$(ctest --test-dir build -N -L integ | grep -Po "^Total Tests: \K[0-9]*")
+    local ALLTESTS=$(ctest --test-dir build -N -L integ | grep -Po ' *Test #[0-9]*: integrationv2_\K[a-z|_]*')
+    # TODO: use the numbers in each junit report to validate the runs. These might not correlate with
+    # source files.
+    # TODO: decide if we want to aggregate the files outside this function.
+    # OR just parse each file here:
+    # for test in $ALLTESTS:
+    #   look for a corresponding junit report
+    #   make sure the failures are zero 
+    #   run number is postive, 
+    #   compare against a const? 
+    if [[ "$SOURCE" -eq "$BUILT"  ]]; then
+        echo "All $SOURCE integ tests were built";
+    else
+        echo -e "Not all Integ tests were built/run: \n\tSOURCE: $SOURCE\n\tBUILT: $BUILT\n";
+        exit 1;
+    fi
+)}
+
 function unit {(set -e
     if [[ -z "$1" ]]; then
+        banner "Running all unit tests."
         cmake --build build -j $(nproc)
         ctest --test-dir build -L unit -j $(nproc) --output-junit "junit/unit.xml"  --verbose
     else
-        tests=$(ctest --test-dir build -N -L unit | grep -E "Test +#" | grep -Eo "[^ ]+_test$" | grep "$1")
+        tests=$(ctest --test-dir build -N -L unit |  grep -Po "Test +#[0-9]*: \K[a-z|_|0-9]*$" | grep "$1")
         echo "Tests:"
-        echo "$tests"
-        for test in $tests
-        do
+        echo "$tests" 	
+        for test in $tests; do
             cmake --build build -j $(nproc) --target $test
         done
         ctest --test-dir build -L unit -R "$1" -j $(nproc) --output-junit "junit/$1.xml" --verbose
