@@ -29,109 +29,21 @@ The `insta` crate provides a workflow that is the inspiration for this tool.
 
 #### Baseline workflow
 
-1. Integration tests succeed localy
-1. Run the `capture` command locally to create a snapshot file from the xml, named baseline
-1. check-in and PR the baseline snapshots
+1. Integration tests succeed locally
+2. Run the `capture` command locally to create a snapshot file from the XML, named baseline
+3. Check in and PR the baseline snapshots
 
 #### PR Failure workflow
 
-1. Tests generate a junit report
+1. Tests generate a JUnit report
 2. The report is then compared with the stored baseline snapshot (in the PR, not main)
 3. In CI, an error is raised if there are any differences 
-4. Interactivly, users can review and accept the changes using a CLI tool
+4. Interactively, users can review and accept the changes using a CLI tool
 5. Snapshot updates are then added to the PR 
 
 The workflow for adding new ciphers, curves, and other fixtures should be identical to the PR failure workflow.  
 
-For entirely new tests, we need to ensure that the delta check routine fails if no baseline snapshot file
- exists for a given junit report.
-
-
-## System Design
-
-### Core Components
-
-1. **XML Parser**
-   - Parse JUnit XML files into structured data
-   - Extract relevant test information
-
-2. **Snapshot Manager**
-   - Store and retrieve snapshots
-   - Compare current results with stored snapshots
-   - Generate diff reports
-
-3. **CLI Interface**
-   - Commands for reviewing changes
-   - Commands for accepting/rejecting changes
-   - Options for filtering and formatting output
-   - Friendly to CI with helpful error messaging and exit codes
-
-4. **Configuration System**
-   - Project-specific settings
-   - Ignore patterns
-   - Custom comparison settings
-
-### Data Model
-
-```rust
-/// Represents a test suite from JUnit XML
-struct TestSuite {
-    name: String,
-    tests: u32,
-    failures: u32,
-    errors: u32,
-    skipped: u32,
-    time: f64,
-    timestamp: String,
-    test_cases: Vec<TestCase>,
-}
-
-/// Represents an individual test case
-struct TestCase {
-    name: String,
-    classname: String,
-    time: f64,
-    status: TestStatus,
-    failure_message: Option<String>,
-    failure_type: Option<String>,
-    system_out: Option<String>,
-    system_err: Option<String>,
-}
-
-/// Status of a test case
-enum TestStatus {
-    Success,
-    Failure,
-    Error,
-    Skipped,
-}
-
-/// Snapshot of test results
-struct Snapshot {
-    id: String,
-    timestamp: DateTime<Utc>,
-    test_suites: Vec<TestSuite>,
-}
-
-/// Difference between snapshots
-struct SnapshotDiff {
-    old_snapshot: Option<Snapshot>,
-    new_snapshot: Snapshot,
-    added_tests: Vec<TestCase>,
-    removed_tests: Vec<TestCase>,
-    changed_tests: Vec<(TestCase, TestCase)>,
-    status_changes: Vec<StatusChange>,
-}
-
-/// Change in test status
-struct StatusChange {
-    test_name: String,
-    old_status: TestStatus,
-    new_status: TestStatus,
-}
-```
-
-## Implementation Plan
+For entirely new tests, we need to ensure that the delta check routine fails if no baseline snapshot file exists for a given JUnit report.
 
 ### Phase 1: Core Functionality
 
@@ -141,8 +53,8 @@ struct StatusChange {
    - Add validation for XML format
 
 2. **Snapshot Storage**
-   - Design snapshot file format in JSON
-   - Implement serialization/deserialization
+   - Design snapshot file format in Toml
+   - Must be plain text that could be searched with `grep`
    - Create directory structure for snapshots
 
 3. **Basic Comparison Logic**
@@ -150,6 +62,8 @@ struct StatusChange {
    - Generate detailed diffs between snapshots
    - Highlight important changes (e.g., passing → failing)
    - Generate an error code when differences are detected
+   - On failures in CI, provide a narrative description of what failed and how to fix
+   - For large changes (>10), summarize trends, patterns or aggregate results
 
 ### Phase 2: CLI Interface
 
@@ -157,8 +71,7 @@ struct StatusChange {
    - `init`: Initialize snapshot directory
    - `capture`: Create new snapshots from JUnit XML files
    - `compare`: Compare current results with snapshots
-   - `review`: Interactive review of changes
-   - `accept`: Accept changes to snapshots
+   - `accept`: Accept all changes to snapshots
 
 2. **Output Formatting**
    - Color-coded terminal output
@@ -169,50 +82,6 @@ struct StatusChange {
    - Filter by test name/pattern
    - Filter by status change
    - Filter by test suite
-
-### Phase 3: Advanced Features
-
-1. **CI Integration**
-   - GitHub Actions
-
-2. **Configuration System**
-   - Project-specific settings
-   - Ignore patterns for noisy tests
-   - Custom comparison thresholds
-
-## File Structure
-
-```
-src/
-├── main.rs                 # Entry point
-├── cli/                    # CLI implementation
-│   ├── mod.rs
-│   ├── commands.rs
-│   └── output.rs
-├── junit/                  # JUnit XML parsing
-│   ├── mod.rs
-│   ├── parser.rs
-│   └── model.rs
-├── snapshot/               # Snapshot management
-│   ├── mod.rs
-│   ├── storage.rs
-│   ├── diff.rs
-│   └── review.rs
-└── config/                 # Configuration
-    ├── mod.rs
-    └── settings.rs
-```
-
-## Dependencies
-
-- `clap`: Command line argument parsing
-- `quick-xml`: XML parsing
-- `serde`: Serialization/deserialization
-- `chrono`: Date and time handling
-- `similar`: Text diffing
-- `colored`: Terminal coloring
-- `dialoguer`: Interactive CLI prompts
-- `anyhow`: Error handling
 
 ## Example Usage
 
@@ -226,33 +95,8 @@ snapshot-tool capture --input test-results/*.xml
 # Check current results against snapshots
 snapshot-tool check --input test-results/*.xml
 
-# Review changes interactively
-snapshot-tool review
-
 # Accept all changes
-snapshot-tool accept --all
-```
-
-## Configuration File Example
-
-```toml
-# snapshot.toml
-[general]
-snapshot_dir = ".snapshots"
-junit_pattern = "test-results/*.xml"
-
-[review]
-show_output = true
-show_system_err = false
-
-[filters]
-ignore_patterns = [
-    "test_flaky_.*",
-    "test_experimental_.*"
-]
-
-[diff]
-context_lines = 3
+snapshot-tool accept
 ```
 
 ## Testing Strategy
