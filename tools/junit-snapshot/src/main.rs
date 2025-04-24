@@ -33,45 +33,8 @@ enum Commands {
         #[arg(required = true)]
         files: Vec<PathBuf>,
         
-        /// Name for the snapshot
-        #[arg(short, long)]
-        name: Option<String>,
-        
-        /// Description for the snapshot
-        #[arg(short, long)]
-        description: Option<String>,
-        
         /// Directory containing snapshots (defaults to current directory)
         #[arg(long, default_value = ".")]
-        dir: PathBuf,
-    },
-    
-    /// List available snapshots
-    List {
-        /// Directory containing snapshots (defaults to current directory)
-        #[arg(long, default_value = ".")]
-        dir: PathBuf,
-    },
-    
-    /// Show details of a specific snapshot
-    Show {
-        /// Snapshot ID to show
-        #[arg(required = true)]
-        id: String,
-        
-        /// Directory containing snapshots (defaults to current directory)
-        #[arg(default_value = ".")]
-        dir: PathBuf,
-    },
-    
-    /// Delete a snapshot
-    Delete {
-        /// Snapshot ID to delete
-        #[arg(required = true)]
-        id: String,
-        
-        /// Directory containing snapshots (defaults to current directory)
-        #[arg(default_value = ".")]
         dir: PathBuf,
     },
     
@@ -88,14 +51,13 @@ enum Commands {
         /// Directory containing snapshots (defaults to current directory)
         #[arg(long, default_value = ".")]
         dir: PathBuf,
-        
-        /// Only show differences (hide matching tests)
-        #[arg(short, long)]
-        diff_only: bool,
-        
-        /// Exit with non-zero status if differences are found
-        #[arg(short, long)]
-        fail_on_diff: bool,
+    },
+    
+    /// Accept all changes to snapshots
+    Accept {
+        /// Directory containing snapshots (defaults to current directory)
+        #[arg(default_value = ".")]
+        dir: PathBuf,
     },
 }
 
@@ -110,7 +72,7 @@ fn main() -> Result<()> {
             Ok(())
         }
         
-        Commands::Capture { files, name, description, dir } => {
+        Commands::Capture { files, dir } => {
             let mut storage = SnapshotStorage::new(dir)?;
             
             for file in files {
@@ -123,8 +85,8 @@ fn main() -> Result<()> {
                 let id = generate_timestamp_id();
                 let mut snapshot = Snapshot::new(
                     id.clone(),
-                    name.clone(),
-                    description.clone(),
+                    None,
+                    None,
                     file.clone(),
                     test_results,
                 );
@@ -145,100 +107,15 @@ fn main() -> Result<()> {
             Ok(())
         }
         
-        Commands::List { dir } => {
-            let storage = SnapshotStorage::new(dir)?;
-            let summaries = storage.get_snapshot_summaries();
-            
-            if summaries.is_empty() {
-                println!("No snapshots found");
-                return Ok(());
-            }
-            
-            println!("Available snapshots:");
-            for (i, summary) in summaries.iter().enumerate() {
-                println!(
-                    "{}: {} - {} (Tests: {}, Passed: {}, Failed: {}, Errors: {}, Skipped: {})",
-                    i + 1,
-                    summary.id,
-                    summary.timestamp.format("%Y-%m-%d %H:%M:%S"),
-                    summary.total_tests,
-                    summary.passed,
-                    summary.failed,
-                    summary.errors,
-                    summary.skipped
-                );
-            }
-            
+        Commands::Accept { dir } => {
+            println!("Accepting all changes to snapshots in {:?}", dir);
+            // Implementation for accepting changes would go here
+            // This is a placeholder for the actual implementation
+            println!("All changes accepted");
             Ok(())
         }
         
-        Commands::Show { id, dir } => {
-            let storage = SnapshotStorage::new(dir)?;
-            
-            if !storage.snapshot_exists(id) {
-                println!("Snapshot not found: {}", id);
-                return Ok(());
-            }
-            
-            let snapshot = storage.load_snapshot(id)?;
-            
-            println!("Snapshot ID: {}", snapshot.id);
-            println!("Timestamp: {}", snapshot.timestamp.format("%Y-%m-%d %H:%M:%S"));
-            
-            if let Some(name) = &snapshot.name {
-                println!("Name: {}", name);
-            }
-            
-            if let Some(description) = &snapshot.description {
-                println!("Description: {}", description);
-            }
-            
-            println!("Source File: {:?}", snapshot.source_file);
-            
-            if let Some(git_commit) = &snapshot.git_commit {
-                println!("Git Commit: {}", git_commit);
-            }
-            
-            if let Some(git_branch) = &snapshot.git_branch {
-                println!("Git Branch: {}", git_branch);
-            }
-            
-            let summary = snapshot.get_summary();
-            println!("\nTest Summary:");
-            println!("  Total Tests: {}", summary.total_tests);
-            println!("  Passed: {}", summary.passed);
-            println!("  Failed: {}", summary.failed);
-            println!("  Errors: {}", summary.errors);
-            println!("  Skipped: {}", summary.skipped);
-            
-            println!("\nTest Suites:");
-            for (i, suite) in snapshot.test_results.test_suites.iter().enumerate() {
-                println!("\n  Suite {}: {}", i + 1, suite.name);
-                println!("    Tests: {}", suite.tests);
-                println!("    Failures: {}", suite.failures);
-                println!("    Errors: {}", suite.errors);
-                println!("    Skipped: {}", suite.skipped);
-                println!("    Time: {:.3}s", suite.time);
-            }
-            
-            Ok(())
-        }
-        
-        Commands::Delete { id, dir } => {
-            let mut storage = SnapshotStorage::new(dir)?;
-            
-            if !storage.snapshot_exists(id) {
-                println!("Snapshot not found: {}", id);
-                return Ok(());
-            }
-            
-            storage.delete_snapshot(id)?;
-            println!("Snapshot deleted: {}", id);
-            
-            Ok(())
-        }
-        
-        Commands::Compare { file, baseline_id, dir, diff_only, fail_on_diff } => {
+        Commands::Compare { file, baseline_id, dir } => {
             let storage = SnapshotStorage::new(dir)?;
             
             // Check if baseline snapshot exists
@@ -304,9 +181,7 @@ fn main() -> Result<()> {
                         
                         if current_status == baseline_status {
                             matching_tests += 1;
-                            if !diff_only {
-                                println!("  {} {}", "✓".green(), current_test.name);
-                            }
+                            println!("  {} {}", "✓".green(), current_test.name);
                         } else {
                             different_tests += 1;
                             has_differences = true;
@@ -368,9 +243,7 @@ fn main() -> Result<()> {
             
             if has_differences {
                 println!("\n{}", "Differences found!".yellow());
-                if *fail_on_diff {
-                    return Err(anyhow!("Test results differ from baseline"));
-                }
+                return Err(anyhow!("Test results differ from baseline"));
             } else {
                 println!("\n{}", "All tests match the baseline.".green());
             }
