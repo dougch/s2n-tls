@@ -4,7 +4,7 @@ This document serves as a comprehensive reference for the s2n-tls project, desig
 
 ## 1. Project Overview
 
-s2n-tls is a C99 implementation of the TLS/SSL protocols that is designed to be simple, small, fast, and with security as a priority. The name "s2n" is short for "signal to noise," referring to the act of encryption which transforms meaningful signals (data) into seemingly random noise.
+s2n-tls is a C99 implementation of the TLS/SSL protocols that is designed to be fast, and with security as a priority. The name "s2n" is short for "signal to noise," referring to the act of encryption which transforms meaningful signals (data) into seemingly random noise.
 
 ### Key Features
 
@@ -17,13 +17,12 @@ s2n-tls is a C99 implementation of the TLS/SSL protocols that is designed to be 
 
 1. **Maintain an excellent TLS/SSL implementation**
 2. **Protect user data and keys**
-3. **Stay simple**
-4. **Write clear readable code with a light cognitive load**
-5. **Defense in depth and systematically**
-6. **Be easy to use and maintain sane defaults**
-7. **Provide great performance and responsiveness**
-8. **Stay paranoid**
-9. **Make data-driven decisions**
+3. **Write clear readable code with a light cognitive load**
+4. **Defense in depth and systematically**
+5. **Be easy to use and maintain sane defaults**
+6. **Provide great performance and responsiveness**
+7. **Stay paranoid**
+8. **Make data-driven decisions**
 
 ### License and Maintenance
 
@@ -41,9 +40,9 @@ s2n-tls is licensed under the Apache License 2.0, which allows users to:
 
 ### Copyright Header Requirements
 
-Every source code file in s2n-tls must include a copy of the Apache Software License 2.0 header, as well as a correct copyright notification. The year of copyright should be the year in which the file was first created.
+Every source code file in s2n-tls must include an Apache Software License 2.0 header, as well as a correct copyright notification. 
 
-Example of the required header:
+Example of a full copyright header:
 
 ```c
 /*
@@ -60,6 +59,13 @@ Example of the required header:
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
+```
+
+Or the abreviated Header
+
+```rust
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
 ```
 
 ### Contribution Guidelines
@@ -421,3 +427,13 @@ When adding a new file to the project:
 - **GUARD**: Macro for propagating errors
 - **ENSURE**: Macro for checking conditions
 - **Blinding**: Adding random delays to prevent timing side-channels
+
+### Submitting changes
+
+The source of truth for s2n-tls is GitHub, specifically https://github.com/aws/s2n-tls. When requesting changes, a pull request should be opened that:
+
+1. Clearly desribes why this change is needed
+2. Changes only the minimum needed to accomplish the change, in a small, easily understood write up.
+3. Make it easy for the reviewer to understand why the change is the way it is.
+4. Add comments in the code to explain what is happening
+

@@ -167,7 +167,7 @@ make -C tests/integrationv2 test_client_hello
 
 ### Writing Integration Tests
 
-s2n-tls uses a Python framework for integration testing. To write an integration test:
+s2n-tls uses a Python framework for integration testing, driven by pytest. To write an integration test:
 
 1. Create a new file in `tests/integrationv2/` (e.g., `test_example.py`).
 2. Use the provided test fixtures and utilities.
@@ -450,56 +450,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 ## Continuous Integration
 
 s2n-tls uses continuous integration (CI) to automatically run tests on every code change.
+We use both GitHub Actions and AWS CodeBuild to do CI.
 
-### Setting Up CI for Your Application
+CodeBuild primarily run the main unit, integration and fuzz tets.
 
-1. Configure your CI system to build your application with s2n-tls.
-2. Run unit tests, integration tests, and fuzz tests.
-3. Generate and analyze code coverage reports.
-4. Set up alerts for test failures.
-
-Example GitHub Actions workflow:
-
-```yaml
-name: CI
-
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
-jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v2
-    
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential libssl-dev
-    
-    - name: Clone s2n-tls
-      run: |
-        git clone https://github.com/aws/s2n-tls.git
-        cd s2n-tls
-        git checkout v1.0.0
-    
-    - name: Build s2n-tls
-      run: |
-        cd s2n-tls
-        make
-    
-    - name: Build your application
-      run: |
-        make
-    
-    - name: Run unit tests
-      run: |
-        make test
-    
-    - name: Run integration tests
-      run: |
-        make integration-test
+GitHub actions handles linting, Rust checks, API documentation creation and other smaller misc. checks.
