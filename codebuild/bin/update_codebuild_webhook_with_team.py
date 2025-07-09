@@ -99,14 +99,6 @@ def update_or_create_webhook(project_name, user_ids, event_types=None, aws_regio
             # Webhook doesn't exist, create it
             click.echo(f"Creating new webhook for '{project_name}'...")
             
-            # Add HEAD_REF filter to the filter group for branch matching
-            # when creating a new webhook (instead of using branchFilter)
-            filter_group.append({
-                'type': 'HEAD_REF',
-                'pattern': branch_pattern,
-                'excludeMatchedPattern': False
-            })
-            
             response = codebuild.create_webhook(
                 projectName=project_name,
                 filterGroups=filter_groups
