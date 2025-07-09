@@ -70,6 +70,14 @@ def update_or_create_webhook(project_name, user_ids, event_types=None, aws_regio
         }
         filter_group.append(event_filter)
         
+        # Add a filter to exclude files starting with 'codebuild/spec'
+        spec_file_filter = {
+            'type': 'FILE_PATH',
+            'pattern': '^codebuild/spec.*',
+            'excludeMatchedPattern': True
+        }
+        filter_group.append(spec_file_filter)
+        
         # Add user ID filters
         for user_login, user_id in user_ids.items():
             user_filter = {
@@ -122,7 +130,7 @@ def update_or_create_webhook(project_name, user_ids, event_types=None, aws_regio
 @click.option('--token', envvar='GITHUB_TOKEN', help='GitHub API token')
 @click.option('--team', default='s2n-core', help='GitHub team slug')
 @click.option('--org', default='aws', help='GitHub organization')
-@click.option('--project-name', help='AWS CodeBuild project name')
+@click.option('--project-name', multiple=True, help='AWS CodeBuild project name(s) - can be specified multiple times')
 @click.option('--aws-region', help='AWS region (defaults to AWS_REGION env var or profile)')
 @click.option('--fetch-only', is_flag=True, help='Only fetch team members without updating CodeBuild')
 @click.option('--event-types', default='PULL_REQUEST_CREATED,PULL_REQUEST_UPDATED', 
@@ -155,13 +163,22 @@ def main(token, team, org, project_name, aws_region, fetch_only, event_types, br
                 click.echo("\nNo CodeBuild project name provided. Use --project-name to update webhook.")
             return
         
-        # Update or create CodeBuild webhook
-        click.echo(f"\nConfiguring CodeBuild project '{project_name}' webhook...")
-        click.echo(f"Using event types: {', '.join(event_type_list)}")
+        # Print common configuration
+        click.echo(f"\nUsing event types: {', '.join(event_type_list)}")
         click.echo(f"Using branch pattern: {branch_pattern}")
-        success = update_or_create_webhook(project_name, member_ids, event_type_list, aws_region, branch_pattern)
         
-        if not success:
+        # Track overall success
+        all_success = True
+        
+        # Update or create CodeBuild webhook for each project
+        for project in project_name:
+            click.echo(f"\nConfiguring CodeBuild project '{project}' webhook...")
+            success = update_or_create_webhook(project, member_ids, event_type_list, aws_region, branch_pattern)
+            if not success:
+                all_success = False
+                click.echo(f"Failed to update webhook for '{project}'", err=True)
+        
+        if not all_success:
             sys.exit(1)
             
     except requests.exceptions.RequestException as e:
