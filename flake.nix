@@ -53,10 +53,6 @@
           pkgs.shellcheck
           # There are 2 nix formatters; use the old one for now.
           pkgs.nixfmt-classic
-          # This will eventually replace everything in nix/pyenv.nix
-          pkgs.uv
-          pkgs.python310Packages.pep8
-          pkgs.python310Packages.ipython
 
           # Rust
           pkgs.rustup

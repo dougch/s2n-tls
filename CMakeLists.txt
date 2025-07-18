@@ -36,8 +36,6 @@ option(S2N_OVERRIDE_LIBCRYPTO_RAND_ENGINE "Allow s2n-tls to override the libcryp
 s2n-tls implementation, when appropriate. Disabling this flag is not recommended. See docs/BUILD.md for details." ON)
 option(COVERAGE "Enable profiling collection for code coverage calculation" OFF)
 option(BUILD_TESTING "Build tests for s2n-tls. By default only unit tests are built." ON)
-option(S2N_INTEG_TESTS "Enable the integrationv2 tests" OFF)
-option(S2N_FAST_INTEG_TESTS "Enable the integrationv2 with more parallelism, only has effect if S2N_INTEG_TESTS=ON" ON)
 option(S2N_INSTALL_S2NC_S2ND "Install the binaries s2nc and s2nd" OFF)
 option(S2N_USE_CRYPTO_SHARED_LIBS "For S2N to use shared libs in Findcrypto" OFF)
 option(TSAN "Enable ThreadSanitizer to test thread safety" OFF)
@@ -618,56 +616,6 @@ if (BUILD_TESTING)
     if(S2N_LTO)
         target_compile_options(s2nc PRIVATE -flto)
         target_compile_options(s2nd PRIVATE -flto)
-    endif()
-
-    if (S2N_INTEG_TESTS)
-        find_package (Python3 COMPONENTS Interpreter Development)
-        file(GLOB integv2_test_files "${PROJECT_SOURCE_DIR}/tests/integrationv2/test_*.py")
-        set(N 1)
-        if (S2N_FAST_INTEG_TESTS)
-            set(N auto)
-        endif()
-        foreach(test_file_path ${integv2_test_files})
-            get_filename_component(test_filename ${test_file_path} NAME_WE)
-            string(REGEX REPLACE "^test_" "integrationv2_" test_target ${test_filename})
-            if (S2N_INTEG_NIX)
-                # For Nix and environments where LD_LIBRARY_PATH is already correct.
-                # We're also dropping tox and calling pytest directly, because
-                # Nix is already handling all of the python setup.
-                if (CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64" AND ${test_target} STREQUAL "integrationv2_sslyze" )
-                  # sslyze/nassl is not available on aarch64.
-                  message(WARNING "Skipping ${test_target} due to missing tools on ${CMAKE_SYSTEM_PROCESSOR}")
-                  continue()
-                endif()
-                message(STATUS "Adding integ test ${test_target}")
-                add_test(NAME ${test_target}
-                        COMMAND
-                        pytest
-                        -x -n=${N} --reruns=2 --durations=10 --cache-clear -rpfsq
-			--junitxml=../../build/junit/${test_target}.xml
-                        -o log_cli=true --log-cli-level=DEBUG --provider-version=$ENV{S2N_LIBCRYPTO}
-                        ${test_file_path}
-                        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/tests/integrationv2
-                )
-            else()
-                # For use with libcryptos built into test-deps, and not in LD_LIBRARY_PATH.
-                # This is a duplication of tests/integrationv2/Makefile and
-                # can go away once all the Nix porting is finished.
-                add_test(NAME ${test_target}
-                        COMMAND
-                        ${CMAKE_COMMAND} -E env
-                        DYLD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/libcrypto-root/lib:$ENV{DYLD_LIBRARY_PATH}
-                        LD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/libcrypto-root/lib:${PROJECT_SOURCE_DIR}/test-deps/openssl-1.1.1/lib:${PROJECT_SOURCE_DIR}/test-deps/gnutls37/nettle/lib:$ENV{LD_LIBRARY_PATH}
-                        PATH=${PROJECT_SOURCE_DIR}/bin:${PROJECT_SOURCE_DIR}/test-deps/openssl-1.1.1/bin:${PROJECT_SOURCE_DIR}/test-deps/gnutls37/bin:$ENV{PATH}
-                        PYTHONNOUSERSITE=1
-                        S2N_INTEG_TEST=1
-                        TOX_TEST_NAME=${test_file_path}
-                        ${Python3_EXECUTABLE} -m tox
-                        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/tests/integrationv2)
-            endif()
-            set_property(TEST ${test_target} PROPERTY LABELS "integrationv2")
-            set_property(TEST ${test_target} PROPERTY TIMEOUT 7200)
-        endforeach()
     endif()
 
     if(S2N_FUZZ_TEST)
