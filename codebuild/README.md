@@ -39,3 +39,46 @@ or
 ```
 sudo find / -name clang* # find all clang binaries
 ```
+
+# CodeBuild Fleets using EC2
+
+This section describes the process for creating custom EC2-based CodeBuild fleets for s2n-tls builds.
+Our main use-case for CodeBuild Ec2 is our kTLS tests, which need to load a kernel module.
+
+## Creating a Custom AMI
+
+### Prepare an EC2 Instance
+- Using the Ec2 Console or the AWS cli, launch a new instance using an AMI from a trusted provider (Amazon, Canonical, Red Hat, etc.)
+- Select an appropriate instance type and platform
+- Launch the instance
+
+### Update and Install Dependencies
+- Update the system packages to the latest versions
+- Install git
+
+### Install and Configure Nix
+- Install Nix
+- Configure Nix to work for the root user (required for CodeBuild)
+- Verify the Nix installation and reduce the store size by running `sudo nix store gc`
+
+### Create an AMI Snapshot
+- In the EC2 Console, or using the AWS cli, create a snapshot from your configured instance
+- Provide a descriptive name for the AMI
+- Wait for the AMI creation process to complete
+- Note the AMI ID for future reference
+
+## Create a CodeBuild Fleet
+
+Using an AMI/snapshot in your own account as input, these steps walk you through creating a CodeBuild fleet.
+
+### Grant CodeBuild Access to the AMI
+- Find the CodeBuild service account ARN for your region
+- Modify AMI permissions to allow the CodeBuild service account to access the ami
+
+### Create the CodeBuild Fleet
+- Make sure you have Admin/full rights to CodeBuild in your account.
+- Navigate to the CodeBuild console, or use the AWS cli
+- Create a new build fleet using your custom AMI
+- Configure fleet settings (instance types, capacity, VPC settings, etc.)
+
+Once completed, your custom EC2-based CodeBuild fleet will be available for running s2n-tls builds with Nix support.
