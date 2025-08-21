@@ -40,6 +40,80 @@ Example:
 EOF
 }
 
+# Function to ensure IAM role has the necessary permissions
+ensure_iam_permissions() {
+    local role_arn="$1"
+    local region="$2"
+
+    # Extract the role name from the ARN
+    local role_name=$(echo "$role_arn" | cut -d'/' -f2)
+
+    echo "Checking permissions for IAM role: $role_name"
+
+    # Check if the role already has the ec2:DescribeImages permission
+    if aws iam get-role-policy --role-name "$role_name" --policy-name codebuild-ec2-permissions --region "$region" 2>/dev/null | grep -q "ec2:DescribeImages"; then
+        echo "IAM role already has ec2:DescribeImages permission."
+        return 0
+    fi
+
+    # Check if the policy exists but doesn't have the permission
+    local policy_exists=0
+    local policy_document=''
+
+    if aws iam get-role-policy --role-name "$role_name" --policy-name codebuild-ec2-permissions --region "$region" &>/dev/null; then
+        policy_exists=1
+        echo "Existing codebuild-ec2-permissions policy found. Updating..."
+
+        # Get current policy
+        local current_policy=$(aws iam get-role-policy --role-name "$role_name" --policy-name codebuild-ec2-permissions --region "$region" --query 'PolicyDocument' --output json)
+
+        # Create a temporary file for the current policy
+        local temp_policy_file=$(mktemp)
+        echo "$current_policy" > "$temp_policy_file"
+
+        # Check if the policy has a Statement array or single Statement
+        if grep -q "\"Statement\":\\s*\\[" "$temp_policy_file"; then
+            # Multi-statement policy - add our statement to the array
+            policy_document=$(jq '.Statement += [{"Effect": "Allow", "Action": "ec2:DescribeImages", "Resource": "*"}]' "$temp_policy_file")
+        else
+            # Single statement policy - convert to array with both statements
+            policy_document=$(jq '. += {"Statement": [.Statement, {"Effect": "Allow", "Action": "ec2:DescribeImages", "Resource": "*"}]}' "$temp_policy_file")
+        fi
+
+        # Clean up
+        rm "$temp_policy_file"
+    else
+        # Create a new policy document with just the required permission
+        policy_document='{
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Action": "ec2:DescribeImages",
+                    "Resource": "*"
+                }
+            ]
+        }'
+    fi
+
+    echo "Adding ec2:DescribeImages permission to IAM role..."
+
+    # Add the policy to the role
+    aws iam put-role-policy \
+        --role-name "$role_name" \
+        --policy-name codebuild-ec2-permissions \
+        --policy-document "$policy_document" \
+        --region "$region"
+
+    if [ $? -eq 0 ]; then
+        echo "Successfully added ec2:DescribeImages permission to IAM role."
+        return 0
+    else
+        echo "Error: Failed to add ec2:DescribeImages permission to IAM role."
+        return 1
+    fi
+}
+
 # Function to create a CodeBuild fleet
 create_codebuild_fleet() {
     local ami_id="$1"
@@ -214,5 +288,11 @@ parse_args() {
 
 # Main function
 parse_args "$@"
+
+# Ensure IAM role has necessary permissions
+echo "Ensuring IAM role has necessary permissions..."
+ensure_iam_permissions "$SERVICE_ROLE_ARN" "$REGION" || exit 1
+
+# Create the CodeBuild fleet
 create_codebuild_fleet "$AMI_ID" "$PLATFORM" "$FLEET_NAME" "$SERVICE_ROLE_ARN" "$REGION"
 return $?
