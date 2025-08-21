@@ -45,8 +45,14 @@ ensure_iam_permissions() {
     local role_arn="$1"
     local region="$2"
 
-    # Extract the role name from the ARN
-    local role_name=$(echo "$role_arn" | cut -d'/' -f2)
+    # Extract the role name from the ARN - handle both regular and service roles
+    if [[ "$role_arn" == *"/service-role/"* ]]; then
+        # For service roles in the format arn:aws:iam::ACCOUNT:role/service-role/ROLE_NAME
+        local role_name=$(echo "$role_arn" | cut -d'/' -f3)
+    else
+        # For regular roles in the format arn:aws:iam::ACCOUNT:role/ROLE_NAME
+        local role_name=$(echo "$role_arn" | cut -d'/' -f2)
+    fi
 
     echo "Checking permissions for IAM role: $role_name"
 
@@ -295,4 +301,3 @@ ensure_iam_permissions "$SERVICE_ROLE_ARN" "$REGION" || exit 1
 
 # Create the CodeBuild fleet
 create_codebuild_fleet "$AMI_ID" "$PLATFORM" "$FLEET_NAME" "$SERVICE_ROLE_ARN" "$REGION"
-return $?
