@@ -50,7 +50,12 @@ check_gnutls_config() {
 
 update_ubuntu_packages() {
     sudo apt update
+    sudo apt install -y linux-libc-dev
     sudo apt upgrade -y
+}
+update_al_pacakges(){
+    sudo dnf update
+    sudo dnf upgrade -y
 }
 # main
 for arg in "$@"; do
@@ -61,7 +66,31 @@ for arg in "$@"; do
             ;;
     esac
 done
-check_gnutls_config
-update_ubuntu_packages
+
+source "/etc/os-release"
+case $ID in
+    ubuntu)
+        echo "Detected Ubuntu."
+        check_gnutls_config
+        update_ubuntu_packages
+        ;;
+    amzn)
+        echo "Detected Amazon Linux."
+        update_al_pacakges
+        ;;
+    *)
+        echo "Unknown OS: $ID"
+        exit 1
+        ;;
+esac
+
 setup_sudo
 setup_nix
+
+sudo nix store gc
+if [[ "$_" -eq 0 ]]; then
+    echo "Nix installed successfully."
+else
+    echo "Nix installation failed."
+    exit 1
+fi
