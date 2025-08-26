@@ -88,7 +88,7 @@ setup_sudo
 setup_nix
 
 sudo nix store gc
-if [[ "$_" -eq 0 ]]; then
+if [[ "$?" -eq 0 ]]; then
     echo "Nix installed successfully."
 else
     echo "Nix installation failed."
