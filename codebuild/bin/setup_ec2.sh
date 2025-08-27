@@ -56,6 +56,8 @@ update_ubuntu_packages() {
 update_al_pacakges(){
     sudo dnf update
     sudo dnf upgrade -y
+    # TODO: Major minor isn't something uname provides without parsing.
+    sudo dnf install kernel6.12-headers
 }
 # main
 for arg in "$@"; do
