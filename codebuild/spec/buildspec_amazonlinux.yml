@@ -32,4 +32,5 @@ phases:
   build:
     commands:
       - printenv
+      - uname -a
       - $CB_BIN_DIR/s2n_codebuild_al.sh
