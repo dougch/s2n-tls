@@ -37,6 +37,7 @@
           pkgs.stress
           # GnuTLS-cli and serv utilities needed for some integration tests.
           pkgs.gnutls
+          pkgs.openssl_3_5
           pkgs.tshark
 
           # C Compiler Tooling; adding llvm/clang is an involved future task.

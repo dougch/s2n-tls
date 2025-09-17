@@ -18,6 +18,7 @@ let
       if openssl_1_0_2 != null then "${openssl_1_0_2}" else "";
     OPENSSL_1_1_1_INSTALL_DIR = "${openssl_1_1_1}";
     OPENSSL_3_0_INSTALL_DIR = "${openssl_3_0}";
+    OPENSSL_3_5_INSTALL_DIR = "${pkgs.openssl_3_5}";
     AWSLC_INSTALL_DIR = "${aws-lc}";
     AWSLC_FIPS_2022_INSTALL_DIR = "${aws-lc-fips-2022}";
     AWSLC_FIPS_2024_INSTALL_DIR = "${aws-lc-fips-2024}";
