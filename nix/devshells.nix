@@ -1,5 +1,5 @@
 { pkgs, system, common_packages, openssl_1_0_2, openssl_1_1_1, openssl_3_0
-, aws-lc, aws-lc-fips-2022, aws-lc-fips-2024, writeScript }:
+, aws-lc, aws-lc-fips-2022, aws-lc-fips-2024, writeScript, cbmc-packages }:
 
 let
   # Define the default devShell
@@ -115,6 +115,20 @@ let
     '';
   });
 
+  # Define the cbmc devShell
+  cbmc_shell = default.overrideAttrs (finalAttrs: previousAttrs: {
+    # Re-include cmake to update the environment with a new libcrypto.
+    buildInputs = [ pkgs.cmake openssl_3_0 cbmc-packages ];
+    packages = common_packages;
+    S2N_LIBCRYPTO = "openssl-3.0";
+    shellHook = ''
+      echo Setting up $S2N_LIBCRYPTO environment with CBMC tools from flake.nix...
+      export PATH=${cbmc-packages}/bin:${openssl_1_1_1}/bin:$PATH
+      export PS1="[nix $S2N_LIBCRYPTO cbmc] $PS1"
+      source ${writeScript ./shell.sh}
+    '';
+  });
+
 in {
   default = default;
   openssl111 = openssl111;
@@ -123,4 +137,5 @@ in {
   awslc = awslc_shell;
   awslcfips2022 = awslcfips2022_shell;
   awslcfips2024 = awslcfips2024_shell;
+  cbmc = cbmc_shell;
 }

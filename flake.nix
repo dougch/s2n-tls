@@ -8,9 +8,10 @@
     awslc.url = "github:aws/aws-lc";
     awslcfips2022.url = "github:dougch/aws-lc?ref=nixAWS-LC-FIPS-2.0.17";
     awslcfips2024.url = "github:dougch/aws-lc?ref=nixfips-2024-09-27";
+    mlkem-native.url = "github:pq-code-package/mlkem-native";
   };
 
-  outputs = { self, nixpkgs, awslc, awslcfips2022, awslcfips2024, flake-utils }:
+  outputs = { self, nixpkgs, awslc, awslcfips2022, awslcfips2024, mlkem-native, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
@@ -21,6 +22,7 @@
         aws-lc = awslc.packages.${system}.aws-lc;
         aws-lc-fips-2022 = awslcfips2022.packages.${system}.aws-lc-fips-2022;
         aws-lc-fips-2024 = awslcfips2024.packages.${system}.aws-lc-fips-2024;
+        cbmc-packages = mlkem-native.packages.${system}.cbmc;
         # Note: we're rebuilding, not importing from nixpkgs for the mkShells.
         openssl_1_0_2 = import ./nix/openssl_1_0_2.nix { pkgs = pkgs; };
         openssl_1_1_1 = import ./nix/openssl_1_1_1.nix { pkgs = pkgs; };
@@ -101,6 +103,7 @@
         devShells = import ./nix/devshells.nix {
           inherit pkgs system common_packages openssl_1_0_2 openssl_1_1_1
             openssl_3_0 aws-lc aws-lc-fips-2022 aws-lc-fips-2024 writeScript;
+          cbmc-packages = cbmc-packages;
         };
         packages.devShell = devShells.default.inputDerivation;
         packages.default = packages.s2n-tls;
