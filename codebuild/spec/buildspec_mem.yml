@@ -43,4 +43,17 @@ phases:
       - echo ">>>> NEGATIVE TESTS - EXPECTED TO FAIL <<<<"
       - |
         ! S2N_EXPECTED_CONNECTION_MEMORY_KB=3 make -C build test -- ARGS="-R $S2N_TEST_NAME"
-        ! S2N_EXPECTED_CONNECTION_MEMORY_KB=500 make -C build test -- ARGS="-R $S2N_TEST_NAME"
+        ! S2N_EXPECTED_CONNECTION_MEMORY_KB=500 make -C build test -- ARGS="-R $S2N_TEST_NAME" | tee test_output.log
+  post_build:
+    commands:
+      - |
+      # Parse the negative test output for actual memory usage
+      eval $(sed 's/ //g' test_output.log | gawk -F ':' '/handshakes/{print "export handshakeskb="$2}')
+      if [ ! -z "$handshakeskb" ]; then
+        aws cloudwatch put-metric-data \
+          --namespace "unit" \
+          --metric-name "memory_after_handshakes" \
+          --value $handshakeskb \
+          --dimensions libcrypto=$S2N_LIBCRYPTO,testname=s2n_mem_usage_test
+      fi
+
