@@ -47,13 +47,13 @@ phases:
   post_build:
     commands:
       - |
-      # Parse the negative test output for actual memory usage
-      eval $(sed 's/ //g' test_output.log | gawk -F ':' '/handshakes/{print "export handshakeskb="$2}')
-      if [ ! -z "$handshakeskb" ]; then
-        aws cloudwatch put-metric-data \
-          --namespace "unit" \
-          --metric-name "memory_after_handshakes" \
-          --value $handshakeskb \
-          --dimensions libcrypto=$S2N_LIBCRYPTO,testname=s2n_mem_usage_test
-      fi
+        # Parse the negative test output for actual memory usage
+        eval $(sed 's/ //g' test_output.log | gawk -F ':' '/handshakes/{print "export handshakeskb="$2}')
+        if [ ! -z "$handshakeskb" ]; then
+          aws cloudwatch put-metric-data \
+            --namespace "unit" \
+            --metric-name "memory_after_handshakes" \
+            --value $handshakeskb \
+            --dimensions libcrypto=$S2N_LIBCRYPTO,testname=s2n_mem_usage_test
+        fi
 
