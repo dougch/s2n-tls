@@ -1,0 +1,39 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+# Because the Ec2 reserved instance disks persist between runs,
+# we need to do periodic clean up; The `nix store gc` command runs on Sunday to
+# prevent the disk from filling up.
+---
+version: 0.2
+env:
+  shell: bash
+  variables:
+    NIX_CACHE_BUCKET_GLOBAL: s3://s2n-tls-nixcachebucket-x86-64?region=us-west-2
+    NIX_CACHE_BUCKET_GLOBAL_CMD: $(echo "cmd_shell_did_this")
+
+batch:
+  build-list:
+    # Cache job for x86
+    - identifier: Cache_x86_64
+      env:
+        fleet: ubuntu24_x86_64_nix
+        variables:
+          NIX_CACHE_BUCKET: s3://s2n-tls-nixcachebucket-x86-64?region=us-west-2
+
+    # Cache Job for aarch64
+    - identifier: nixCache_aarch64
+      env:
+        fleet: ubuntu24_aarch64_nix
+        variables:
+          NIX_CACHE_BUCKET: "$NIX_CACHE_BUCKET_GLOBAL"
+
+phases:
+  build:
+    commands:
+      - |
+        set -e
+        echo "Local: $NIX_CACHE_BUCKET"
+        echo "Global: $NIX_CACHE_BUCKET_GLOBAL"
+        echo "Global: $NIX_CACHE_BUCKET_GLOBAL_CMD"
+        printenv
